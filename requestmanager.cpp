@@ -12,6 +12,13 @@
 static const QLatin1String kHornAppBaseUrl("http://app.hornapp.com/request/v1/");
 static const QLatin1String kToken("d7f346b2a426f2d9b18c255c605e9d27053a247adaafcb56d9ef00f5c20f240b"), kUserId("525c87a74549fa59bd41829815f024c21cc352fe6ba85aa047a3e1c73f53cf2f");
 
+enum
+{
+    Auth,
+    User,
+    Geo
+};
+
 RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNetworkAccessManager)
 {
 //    QNetworkRequest request(QUrl(kHornAppBaseUrl + ));
@@ -25,26 +32,49 @@ RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNe
 //    request.setRawHeader("Host", "app.hornapp.com");
 //    request.setRawHeader("Accept-Encoding", "gzip, deflate");
 
-    _patchRequestDataBuffer.setData("{}", 2);
-    _patchRequestDataBuffer.open(QIODevice::ReadOnly);
-
-    QNetworkReply *reply = _qnam->sendCustomRequest(requestFromUrlPart(QString("Auth/%1").arg(kToken)), "PATCH", &_patchRequestDataBuffer);
-    connect(reply, &QNetworkReply::finished, [reply, this] {
-        qDebug("auth finished");
+    connect(_qnam, &QNetworkAccessManager::finished, [](QNetworkReply *reply) {
         bool ok = reply->error() == QNetworkReply::NoError;
-        reply->deleteLater();
+        qDebug() << reply->rawHeaderPairs();
+        QByteArray data = reply->readAll();
+        qDebug() << data;
 
         if (ok)
         {
-            QNetworkReply *reply = _qnam->get(requestFromUrlPart(QString("User/%1").arg(kUserId)));
-            connect(reply, &QNetworkReply::finished, [reply] {
-                qDebug("login finished");
+            switch (reply->property("type").toInt()) {
+            case User:
+            {
                 QJsonDocument json = QJsonDocument::fromJson(reply->readAll());
-                reply->deleteLater();
-                qDebug() << json;
-            });
+            }
+                break;
+            default:
+                break;
+            }
         }
+        reply->deleteLater();
     });
+
+    _patchRequestDataBuffer.setData("{}", 2);
+    _patchRequestDataBuffer.open(QIODevice::ReadOnly);
+
+    /*QNetworkReply *reply =*/ _qnam->sendCustomRequest(requestFromUrlPart(QString("Auth/%1").arg(kToken)), "PATCH", &_patchRequestDataBuffer)->setProperty("type", Auth);
+    _qnam->get(requestFromUrlPart(QString("User/%1").arg(kUserId)))->setProperty("type", User);
+    _qnam->get(requestFromUrlPart(QLatin1String("IpGeo/1")))->setProperty("type", Geo);
+//    connect(reply, &QNetworkReply::finished, [reply, this] {
+//        qDebug("auth finished");
+//        bool ok = reply->error() == QNetworkReply::NoError;
+//        reply->deleteLater();
+
+//        if (ok)
+//        {
+//            QNetworkReply *reply = _qnam->get(requestFromUrlPart(QString("User/%1").arg(kUserId)));
+//            connect(reply, &QNetworkReply::finished, [reply] {
+//                qDebug("login finished");
+//                QJsonDocument json = QJsonDocument::fromJson(reply->readAll());
+//                reply->deleteLater();
+//                qDebug() << json;
+//            });
+//        }
+//    });
 //    connect(reply, static_cast<void (QNetworkReply::*)(QNetworkReply::NetworkError)>(&QNetworkReply::error), [reply](QNetworkReply::NetworkError code) {
 //        qDebug() << "error" << code << reply->errorString();
 //        qDebug() << reply->rawHeaderPairs();
