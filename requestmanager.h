@@ -2,7 +2,6 @@
 #define REQUESTMANAGER_H
 
 #include <QObject>
-#include <QBuffer>
 
 #include <QNetworkRequest>
 
@@ -18,6 +17,8 @@ public:
         return obj;
     }
 
+    void sendNewPostsRequest();
+
 signals:
 
 public slots:
@@ -26,11 +27,14 @@ private:
     explicit RequestManager(QObject *parent = 0);
     RequestManager(RequestManager &) {}
 
-    QNetworkRequest requestFromUrlPart(const QString &urlPart, const QString &urlJsonText = QString());
+    void sendAuthRequest();
+    void sendUserRequest();
+    void sendGeoRequest();
+
+    QNetworkRequest requestFromUrlParts(const QString &urlPart, const QString &urlJsonText = QString());
 
 private:
     QNetworkAccessManager *_qnam;
-    QBuffer _patchRequestDataBuffer;
 };
 
 #endif // REQUESTMANAGER_H
