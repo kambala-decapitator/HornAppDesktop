@@ -16,7 +16,8 @@ enum
 {
     Auth,
     User,
-    Geo
+    Geo,
+    New
 };
 
 RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNetworkAccessManager)
@@ -59,6 +60,7 @@ RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNe
     /*QNetworkReply *reply =*/ _qnam->sendCustomRequest(requestFromUrlPart(QString("Auth/%1").arg(kToken)), "PATCH", &_patchRequestDataBuffer)->setProperty("type", Auth);
     _qnam->get(requestFromUrlPart(QString("User/%1").arg(kUserId)))->setProperty("type", User);
     _qnam->get(requestFromUrlPart(QLatin1String("IpGeo/1")))->setProperty("type", Geo);
+    _qnam->get(requestFromUrlPart(QLatin1String("Horn/New/"), QLatin1String("{\"limit\":50,\"conditions\":{\"0\":{\"lang\":\"ru\"}}}")))->setProperty("type", New);
 //    connect(reply, &QNetworkReply::finished, [reply, this] {
 //        qDebug("auth finished");
 //        bool ok = reply->error() == QNetworkReply::NoError;
@@ -82,9 +84,20 @@ RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNe
 //    });
 }
 
-QNetworkRequest RequestManager::requestFromUrlPart(const QString &urlPart)
+QNetworkRequest RequestManager::requestFromUrlPart(const QString &urlPart, const QString &urlJsonText)
 {
-    QNetworkRequest request(QUrl(kHornAppBaseUrl + QString("%1?token=%2").arg(urlPart, kToken)));
+    QString urlString = kHornAppBaseUrl + QString("%1?token=%2").arg(urlPart, kToken);
+    if (!urlJsonText.isEmpty())
+        urlString += QLatin1String("&json=") + QString::fromUtf8(QUrl::toPercentEncoding(urlJsonText));
+
+    QNetworkRequest request;
+    request.setUrl(QUrl(urlString));
+    request.setOriginatingObject(this);
+    if (!urlJsonText.isEmpty())
+    {
+        qDebug() << urlString;
+        qDebug() << request.url();
+    }
     request.setHeader(QNetworkRequest::UserAgentHeader, "HornAppDesktop/0.1 (Windows 8.1 x64)");
     return request;
 }

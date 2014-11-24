@@ -26,7 +26,7 @@ private:
     explicit RequestManager(QObject *parent = 0);
     RequestManager(RequestManager &) {}
 
-    QNetworkRequest requestFromUrlPart(const QString &urlPart);
+    QNetworkRequest requestFromUrlPart(const QString &urlPart, const QString &urlJsonText = QString());
 
 private:
     QNetworkAccessManager *_qnam;
