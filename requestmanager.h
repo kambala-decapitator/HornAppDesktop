@@ -5,11 +5,18 @@
 
 #include <QNetworkRequest>
 
+#include <functional>
+
+#include "feeditem.h"
+
+typedef std::function<void(const QList<FeedItem> &)> FeedLambda;
+
 class QNetworkAccessManager;
 
 class RequestManager : public QObject
 {
     Q_OBJECT
+
 public:
     static RequestManager &instance()
     {
@@ -17,7 +24,7 @@ public:
         return obj;
     }
 
-    void sendNewPostsRequest();
+    void sendNewPostsRequest(FeedLambda callback);
 
 signals:
 

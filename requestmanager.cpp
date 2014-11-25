@@ -31,22 +31,36 @@ RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNe
     sendGeoRequest();
 }
 
-void RequestManager::sendNewPostsRequest()
+void RequestManager::sendNewPostsRequest(FeedLambda callback)
 {
     auto reply = _qnam->get(requestFromUrlParts(QLatin1String("Horn/New/"), QLatin1String("{\"limit\":20,\"conditions\":{\"0\":{\"lang\":\"ru\"}}}")));
-    connect(reply, &QNetworkReply::finished, [reply]{
+    connect(reply, &QNetworkReply::finished, [reply, callback]{
         if (reply->error() == QNetworkReply::NoError)
         {
-            auto array = QJsonDocument::fromJson(reply->readAll()).array();
-            for (const auto &value : array)
+            QList<FeedItem> result;
+            for (const auto &value : QJsonDocument::fromJson(reply->readAll()).array())
             {
+                FeedItem item;
                 auto dic = value.toObject();
-                auto message = dic["message"].toString();
-                auto id = dic["id"].toString().toInt();
-                auto comments = dic["scomms"].toString().toInt();
-                auto votes = dic["svotes"].toString().toInt();
-                qDebug() << id << votes << comments << message;
+
+                auto background = dic["bg"].toString();
+                if (background.isEmpty())
+                    background = dic["image"].toObject()["link"].toString();
+                item.background = background;
+
+                auto coordinates = dic["centroid"].toObject()["coordinates"].toArray();
+                if (coordinates.size() == 2)
+                    item.coordinates = QPoint(coordinates.at(0).toInt(), coordinates.at(1).toInt());
+
+                item.timestamp = dic["dtc"].toString().toInt();
+                item.id = dic["id"].toString().toInt();
+                item.message = dic["message"].toString();
+                item.comments = dic["scomms"].toString().toInt();
+                item.reputation = dic["svotes"].toString().toInt();
+
+                result += item;
             }
+            callback(result);
         }
     });
 }

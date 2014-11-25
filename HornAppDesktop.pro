@@ -17,6 +17,7 @@ SOURCES += main.cpp\
     requestmanager.cpp
 
 HEADERS  += widget.h \
-    requestmanager.h
+    requestmanager.h \
+    feeditem.h
 
 FORMS    += widget.ui
