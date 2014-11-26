@@ -10,6 +10,8 @@ class FeedItemDelegate : public QStyledItemDelegate
 public:
     explicit FeedItemDelegate(QObject *parent = 0);
 
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+
 signals:
 
 public slots:
