@@ -14,10 +14,14 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         widget.cpp \
-    requestmanager.cpp
+    requestmanager.cpp \
+    feedlistmodel.cpp \
+    feeditemdelegate.cpp
 
 HEADERS  += widget.h \
     requestmanager.h \
-    feeditem.h
+    feeditem.h \
+    feedlistmodel.h \
+    feeditemdelegate.h
 
 FORMS    += widget.ui

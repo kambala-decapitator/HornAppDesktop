@@ -7,6 +7,8 @@ namespace Ui {
 class Widget;
 }
 
+class FeedListModel;
+
 class Widget : public QWidget
 {
     Q_OBJECT
@@ -17,6 +19,8 @@ public:
 
 private:
     Ui::Widget *ui;
+
+    FeedListModel *_feedModel;
 };
 
 #endif // WIDGET_H
