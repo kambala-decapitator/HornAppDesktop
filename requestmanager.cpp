@@ -37,26 +37,51 @@ void RequestManager::sendNewPostsRequest(FeedLambda callback)
     connect(reply, &QNetworkReply::finished, [reply, callback]{
         if (reply->error() == QNetworkReply::NoError)
         {
-            QList<FeedItem> result;
-            for (const auto &value : QJsonDocument::fromJson(reply->readAll()).array())
+            QList<TextItem *> result;
+            for (const auto &value : arrayFromReply(reply))
             {
-                FeedItem item;
+                FeedItem *item = new FeedItem;
                 auto dic = value.toObject();
+                item->setupFromJson(dic);
 
                 auto background = dic["bg"].toString();
                 if (background.isEmpty())
                     background = dic["image"].toObject()["link"].toString();
-                item.background = background;
+                item->background = background;
 
                 auto coordinates = dic["centroid"].toObject()["coordinates"].toArray();
                 if (coordinates.size() == 2)
-                    item.coordinates = QPoint(coordinates.at(0).toInt(), coordinates.at(1).toInt());
+                    item->coordinates = QPoint(coordinates.at(0).toInt(), coordinates.at(1).toInt());
 
-                item.timestamp = dic["dtc"].toString().toInt();
-                item.id = dic["id"].toString().toInt();
-                item.message = dic["message"].toString();
-                item.comments = dic["scomms"].toString().toInt();
-                item.reputation = dic["svotes"].toString().toInt();
+                item->comments = dic["scomms"].toString().toInt();
+
+                result += item;
+            }
+            callback(result);
+        }
+    });
+}
+
+void RequestManager::sendCommentsRequest(quint32 postId, FeedLambda callback)
+{
+    QJsonObject dic;
+    dic["horn_id"] = QJsonValue(static_cast<int>(postId));
+
+    QNetworkRequest request = requestFromUrlParts(QLatin1String("Horn/Entry/"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QLatin1String("application/json; charset=utf-8"));
+    _qnam->post(request, QJsonDocument(dic).toJson(QJsonDocument::Compact));
+
+    auto reply = _qnam->get(requestFromUrlParts(QString("Horn/%1/Comment/").arg(postId)));
+    connect(reply, &QNetworkReply::finished, [reply, callback]{
+        if (reply->error() == QNetworkReply::NoError)
+        {
+            QList<TextItem *> result;
+            for (const auto &value : arrayFromReply(reply))
+            {
+                CommentItem *item = new CommentItem;
+                auto dic = value.toObject();
+                item->setupFromJson(dic);
+                item->nickname = dic["nickname"].toString();
 
                 result += item;
             }
@@ -108,4 +133,9 @@ QNetworkRequest RequestManager::requestFromUrlParts(const QString &urlPart, cons
     request.setUrl(QUrl(urlString));
     request.setHeader(QNetworkRequest::UserAgentHeader, QString("%1/%2 (Windows 8.1 x64)").arg(qApp->applicationName(), qApp->applicationVersion()));
     return request;
+}
+
+QJsonArray RequestManager::arrayFromReply(QNetworkReply *reply)
+{
+    return QJsonDocument::fromJson(reply->readAll()).array();
 }

@@ -15,14 +15,15 @@ public:
     int rowCount(const QModelIndex &parent) const { Q_UNUSED(parent); return _dataSource.size(); }
     QVariant data(const QModelIndex &index, int role) const;
 
-    void setDataSource(const QList<FeedItem> &feed) { beginResetModel(); _dataSource = feed; endResetModel(); }
+    void setDataSource(const QList<TextItem *> &feed) { beginResetModel(); _dataSource = feed; endResetModel(); }
+    FeedItem *itemAtModelIndex(const QModelIndex &index) { return static_cast<FeedItem *>(_dataSource.at(index.row())); }
 
 signals:
 
 public slots:
 
 private:
-    QList<FeedItem> _dataSource;
+    QList<TextItem *> _dataSource;
 };
 
 #endif // FEEDLISTMODEL_H

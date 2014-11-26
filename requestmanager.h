@@ -9,9 +9,10 @@
 
 #include "feeditem.h"
 
-typedef std::function<void(const QList<FeedItem> &)> FeedLambda;
+typedef std::function<void(const QList<TextItem *> &)> FeedLambda;
 
 class QNetworkAccessManager;
+class QNetworkReply;
 
 class RequestManager : public QObject
 {
@@ -25,6 +26,7 @@ public:
     }
 
     void sendNewPostsRequest(FeedLambda callback);
+    void sendCommentsRequest(quint32 postId, FeedLambda callback);
 
 signals:
 
@@ -39,6 +41,7 @@ private:
     void sendGeoRequest();
 
     QNetworkRequest requestFromUrlParts(const QString &urlPart, const QString &urlJsonText = QString());
+    static QJsonArray arrayFromReply(QNetworkReply *reply);
 
 private:
     QNetworkAccessManager *_qnam;
