@@ -33,4 +33,6 @@ struct CommentItem : public TextItem
     QString nickname;
 };
 
+typedef QList<TextItem *> TextItemList;
+
 #endif // FEEDITEM_H

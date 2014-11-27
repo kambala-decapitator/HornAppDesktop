@@ -9,7 +9,7 @@
 
 #include "feeditem.h"
 
-typedef std::function<void(const QList<TextItem *> &)> FeedLambda;
+typedef std::function<void(const TextItemList &)> FeedLambda;
 
 class QNetworkAccessManager;
 class QNetworkReply;

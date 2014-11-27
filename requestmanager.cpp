@@ -40,7 +40,7 @@ void RequestManager::sendNewPostsRequest(FeedLambda callback)
     connect(reply, &QNetworkReply::finished, [reply, callback]{
         if (reply->error() == QNetworkReply::NoError)
         {
-            QList<TextItem *> result;
+            TextItemList result;
             for (const auto &value : arrayFromReply(reply))
             {
                 FeedItem *item = new FeedItem;
@@ -77,7 +77,7 @@ void RequestManager::sendCommentsRequest(quint32 postId, FeedLambda callback)
     connect(reply, &QNetworkReply::finished, [reply, callback]{
         if (reply->error() == QNetworkReply::NoError)
         {
-            QList<TextItem *> result;
+            TextItemList result;
             for (const auto &value : arrayFromReply(reply))
             {
                 CommentItem *item = new CommentItem;

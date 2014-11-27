@@ -3,6 +3,7 @@
 #include "requestmanager.h"
 #include "feedlistmodel.h"
 #include "feeditemdelegate.h"
+#include "commentswidget.h"
 
 #ifndef QT_NO_DEBUG
 #include <QDebug>
@@ -14,19 +15,16 @@ Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedMode
 
     ui->listView->setModel(_feedModel);
     ui->listView->setItemDelegate(new FeedItemDelegate(this));
+
     connect(ui->listView, &QListView::doubleClicked, [this](const QModelIndex &index) {
         FeedItem *item = _feedModel->itemAtModelIndex(index);
-        RequestManager::instance().sendCommentsRequest(item->id, [item, this](const QList<TextItem *> &comments) {
-            qDebug() << "post" << item->id << "has" << comments.size() << "comments";
-            for (const auto &commentItem : comments)
-            {
-                CommentItem *comment = static_cast<CommentItem *>(commentItem);
-                qDebug() << comment->reputation << comment->nickname << ":" << comment->message;
-            }
+        RequestManager::instance().sendCommentsRequest(item->id, [item, this](const TextItemList &comments) {
+            CommentsWidget *w = new CommentsWidget(item, comments, this, Qt::Window);
+            w->show();
         });
     });
 
-    RequestManager::instance().sendNewPostsRequest([this](const QList<TextItem *> &feed) {
+    RequestManager::instance().sendNewPostsRequest([this](const TextItemList &feed) {
         _feedModel->setDataSource(feed);
     });
 }

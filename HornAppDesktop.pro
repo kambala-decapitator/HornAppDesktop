@@ -16,12 +16,15 @@ SOURCES += main.cpp\
         widget.cpp \
     requestmanager.cpp \
     feedlistmodel.cpp \
-    feeditemdelegate.cpp
+    feeditemdelegate.cpp \
+    commentswidget.cpp
 
 HEADERS  += widget.h \
     requestmanager.h \
     feeditem.h \
     feedlistmodel.h \
-    feeditemdelegate.h
+    feeditemdelegate.h \
+    commentswidget.h
 
-FORMS    += widget.ui
+FORMS    += widget.ui \
+    commentswidget.ui
