@@ -21,8 +21,11 @@ static const QLatin1String kToken("d7f346b2a426f2d9b18c255c605e9d27053a247adaafc
 RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNetworkAccessManager)
 {
     connect(_qnam, &QNetworkAccessManager::finished, [](QNetworkReply *reply) {
-//        qDebug() << reply->rawHeaderPairs();
-//        qDebug() << reply->readAll();
+        if (reply->error() != QNetworkReply::NoError)
+        {
+            qDebug() << reply->errorString();
+            qDebug() << reply->rawHeaderPairs();
+        }
         reply->deleteLater();
     });
 
@@ -33,7 +36,7 @@ RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNe
 
 void RequestManager::sendNewPostsRequest(FeedLambda callback)
 {
-    auto reply = _qnam->get(requestFromUrlParts(QLatin1String("Horn/New/"), QLatin1String("{\"limit\":20,\"conditions\":{\"0\":{\"lang\":\"ru\"}}}")));
+    auto reply = _qnam->get(requestFromUrlParts(QLatin1String("Horn/New/"), QLatin1String("{\"limit\":50,\"conditions\":{\"0\":{\"lang\":\"ru\"}}}")));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
         if (reply->error() == QNetworkReply::NoError)
         {
@@ -43,6 +46,7 @@ void RequestManager::sendNewPostsRequest(FeedLambda callback)
                 FeedItem *item = new FeedItem;
                 auto dic = value.toObject();
                 item->setupFromJson(dic);
+                item->comments = dic["scomms"].toString().toInt();
 
                 auto background = dic["bg"].toString();
                 if (background.isEmpty())
@@ -52,8 +56,6 @@ void RequestManager::sendNewPostsRequest(FeedLambda callback)
                 auto coordinates = dic["centroid"].toObject()["coordinates"].toArray();
                 if (coordinates.size() == 2)
                     item->coordinates = QPoint(coordinates.at(0).toInt(), coordinates.at(1).toInt());
-
-                item->comments = dic["scomms"].toString().toInt();
 
                 result += item;
             }
