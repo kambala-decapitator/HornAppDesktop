@@ -16,7 +16,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
 
     void setDataSource(const TextItemList &feed) { beginResetModel(); _dataSource = feed; endResetModel(); }
-    FeedItem *itemAtModelIndex(const QModelIndex &index) { return static_cast<FeedItem *>(_dataSource.at(index.row())); }
+    FeedItem *itemAtModelIndex(const QModelIndex &index) const { return static_cast<FeedItem *>(_dataSource.at(index.row())); }
 
 signals:
 

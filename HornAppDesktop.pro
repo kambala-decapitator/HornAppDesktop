@@ -17,14 +17,23 @@ SOURCES += main.cpp\
     requestmanager.cpp \
     feedlistmodel.cpp \
     feeditemdelegate.cpp \
-    commentswidget.cpp
+    commentswidget.cpp \
+    feeditemwidget.cpp
 
 HEADERS  += widget.h \
     requestmanager.h \
     feeditem.h \
     feedlistmodel.h \
     feeditemdelegate.h \
-    commentswidget.h
+    commentswidget.h \
+    feeditemwidget.h
 
 FORMS    += widget.ui \
-    commentswidget.ui
+    commentswidget.ui \
+    feeditemwidget.ui
+
+macx {
+    *-clang*: cache()
+    QMAKE_MAC_SDK = macosx10.10
+    CONFIG += c++11
+}
