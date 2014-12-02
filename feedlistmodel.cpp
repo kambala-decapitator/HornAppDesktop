@@ -2,10 +2,6 @@
 
 #include <QSize>
 
-FeedListModel::FeedListModel(QObject *parent) : QAbstractListModel(parent)
-{
-}
-
 QVariant FeedListModel::data(const QModelIndex &index, int role) const
 {
     switch (role)

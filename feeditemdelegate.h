@@ -3,19 +3,24 @@
 
 #include <QStyledItemDelegate>
 
+class FeedItem;
+
 class FeedItemDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 
 public:
-    explicit FeedItemDelegate(QObject *parent = 0);
+    explicit FeedItemDelegate(QObject *parent = 0) : QStyledItemDelegate(parent) {}
 
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
-signals:
+    virtual QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    virtual void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    virtual void setEditorData(QWidget *editor, const QModelIndex &index) const;
 
-public slots:
-
+private:
+    FeedItem *itemAtIndex(const QModelIndex &index) const;
+    void centerWidget(QWidget *w) const;
 };
 
 #endif // FEEDITEMDELEGATE_H

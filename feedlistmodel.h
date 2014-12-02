@@ -10,7 +10,7 @@ class FeedListModel : public QAbstractListModel
     Q_OBJECT
 
 public:
-    explicit FeedListModel(QObject *parent = 0);
+    explicit FeedListModel(QObject *parent = 0) : QAbstractListModel(parent) {}
 
     int rowCount(const QModelIndex &parent) const { Q_UNUSED(parent); return _dataSource.size(); }
     QVariant data(const QModelIndex &index, int role) const;

@@ -26,6 +26,8 @@ Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedMode
 
     RequestManager::instance().sendNewPostsRequest([this](const TextItemList &feed) {
         _feedModel->setDataSource(feed);
+        for (int i = 0; i < feed.size(); ++i)
+            ui->listView->openPersistentEditor(_feedModel->index(i));
     });
 }
 
