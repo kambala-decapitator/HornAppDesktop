@@ -4,6 +4,7 @@
 #include <QWidget>
 
 #include "feeditem.h"
+#include "requestmanager.h"
 
 namespace Ui {
 class CommentsWidget;
@@ -19,6 +20,8 @@ public:
 
 private:
     Ui::CommentsWidget *ui;
+
+    void addComment(const QString &comment, const QString &nickname = RequestManager::instance().userNickname(), qint32 reputation = 0);
 };
 
 #endif // COMMENTSWIDGET_H

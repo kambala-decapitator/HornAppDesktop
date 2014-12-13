@@ -36,7 +36,7 @@ RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNe
 
 void RequestManager::requestNewPosts(FeedLambda callback)
 {
-    auto reply = _qnam->get(requestFromUrlParts(QLatin1String("Horn/New/"), QLatin1String("{\"limit\":50,\"conditions\":{\"0\":{\"lang\":\"ru\"}}}")));
+    auto reply = _qnam->get(requestFromUrlParts(QLatin1String("Horn/New/"), true, QLatin1String("{\"limit\":50,\"conditions\":{\"0\":{\"lang\":\"ru\"}}}")));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
         if (reply->error() == QNetworkReply::NoError)
         {
@@ -69,9 +69,7 @@ void RequestManager::requestComments(quint32 postId, FeedLambda callback)
     QJsonObject dic;
     dic["horn_id"] = QJsonValue(static_cast<int>(postId));
 
-    QNetworkRequest request = requestFromUrlParts(QLatin1String("Horn/Entry/"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, QLatin1String("application/json; charset=utf-8"));
-    _qnam->post(request, QJsonDocument(dic).toJson(QJsonDocument::Compact));
+    _qnam->post(requestFromUrlParts(QLatin1String("Horn/Entry/"), false), QJsonDocument(dic).toJson(QJsonDocument::Compact));
 
     auto reply = _qnam->get(requestFromUrlParts(QString("Horn/%1/Comment/").arg(postId)));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
@@ -92,6 +90,18 @@ void RequestManager::requestComments(quint32 postId, FeedLambda callback)
     });
 }
 
+void RequestManager::postComment(quint32 postId, const QString &comment, std::function<void(bool)> callback)
+{
+    // TODO: add support for parent_id
+    QJsonObject dic;
+    dic["message"] = QJsonValue(comment);
+
+    auto reply = _qnam->post(requestFromUrlParts(QString("Horn/%1/Comment/").arg(postId), false), QJsonDocument(dic).toJson(QJsonDocument::Compact));
+    connect(reply, &QNetworkReply::finished, [reply, callback]{
+        callback(reply->error() == QNetworkReply::NoError);
+    });
+}
+
 // private
 
 void RequestManager::requestAuth()
@@ -109,13 +119,13 @@ void RequestManager::requestAuth()
 void RequestManager::requestUserInfo()
 {
     auto reply = _qnam->get(requestFromUrlParts(QString("User/%1").arg(kUserId)));
-    connect(reply, &QNetworkReply::finished, [reply]{
+    connect(reply, &QNetworkReply::finished, [reply, this]{
         if (reply->error() == QNetworkReply::NoError)
         {
             auto dic = QJsonDocument::fromJson(reply->readAll()).object();
             auto nickname = dic["nickname"].toString();
-            auto reputation = dic["rep"].toString().toInt();
-            qDebug() << nickname << "=" << reputation;
+            qDebug() << nickname << "=" << dic["rep"].toString().toInt();
+            _nickname = nickname;
         }
     });
 }
@@ -125,7 +135,7 @@ void RequestManager::requestGeoInfo()
     _qnam->get(requestFromUrlParts(QLatin1String("IpGeo/1")));
 }
 
-QNetworkRequest RequestManager::requestFromUrlParts(const QString &urlPart, const QString &urlJsonText)
+QNetworkRequest RequestManager::requestFromUrlParts(const QString &urlPart, bool get, const QString &urlJsonText)
 {
     auto urlString = kHornAppBaseUrl + QString("%1?token=%2").arg(urlPart, kToken);
     if (!urlJsonText.isEmpty())
@@ -134,6 +144,8 @@ QNetworkRequest RequestManager::requestFromUrlParts(const QString &urlPart, cons
     QNetworkRequest request;
     request.setUrl(QUrl(urlString));
     request.setHeader(QNetworkRequest::UserAgentHeader, QString("%1/%2 (Windows 8.1 x64)").arg(qApp->applicationName(), qApp->applicationVersion()));
+    if (!get)
+        request.setHeader(QNetworkRequest::ContentTypeHeader, QLatin1String("application/json; charset=utf-8"));
     return request;
 }
 

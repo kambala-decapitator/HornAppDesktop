@@ -3,7 +3,7 @@
 
 #include <QStyledItemDelegate>
 
-class FeedItem;
+struct FeedItem;
 
 class FeedItemDelegate : public QStyledItemDelegate
 {

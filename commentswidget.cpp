@@ -10,11 +10,28 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
     for (const auto &item : comments)
     {
         CommentItem *comment = static_cast<CommentItem *>(item);
-        ui->listWidget->addItem(QString("%1 %2: %3").arg(comment->reputation).arg(comment->nickname, comment->message));
+        addComment(comment->message, comment->nickname, comment->reputation);
     }
+
+    connect(ui->sendButton, &QPushButton::clicked, [feedItem, this]{
+        QString comment = ui->plainTextEdit->toPlainText();
+        RequestManager::instance().postComment(feedItem->id, comment, [comment, this](bool ok){
+            if (ok)
+            {
+                addComment(comment);
+                ui->plainTextEdit->clear();
+                // TODO: update comments counter in current widget and in parent feed
+            }
+        });
+    });
 }
 
 CommentsWidget::~CommentsWidget()
 {
     delete ui;
+}
+
+void CommentsWidget::addComment(const QString &comment, const QString &nickname, qint32 reputation)
+{
+    ui->listWidget->addItem(QString("%1 %2: %3").arg(reputation).arg(nickname, comment));
 }

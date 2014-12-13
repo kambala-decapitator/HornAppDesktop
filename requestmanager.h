@@ -25,8 +25,11 @@ public:
         return obj;
     }
 
+    const QString &userNickname() const { return _nickname; }
+
     void requestNewPosts(FeedLambda callback);
     void requestComments(quint32 postId, FeedLambda callback);
+    void postComment(quint32 postId, const QString &comment, std::function<void(bool)> callback);
 
 signals:
 
@@ -40,11 +43,12 @@ private:
     void requestUserInfo();
     void requestGeoInfo();
 
-    QNetworkRequest requestFromUrlParts(const QString &urlPart, const QString &urlJsonText = QString());
+    QNetworkRequest requestFromUrlParts(const QString &urlPart, bool get = true, const QString &urlJsonText = QString());
     static QJsonArray arrayFromReply(QNetworkReply *reply);
 
 private:
     QNetworkAccessManager *_qnam;
+    QString _nickname;
 };
 
 #endif // REQUESTMANAGER_H

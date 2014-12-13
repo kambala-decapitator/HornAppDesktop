@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Comments</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -62,6 +62,16 @@
      </property>
      <property name="placeholderText">
       <string>Enter your comment...</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="sendButton">
+     <property name="text">
+      <string>Send</string>
+     </property>
+     <property name="shortcut">
+      <string notr="true">Ctrl+Return</string>
      </property>
     </widget>
    </item>
