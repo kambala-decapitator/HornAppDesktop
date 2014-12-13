@@ -25,8 +25,8 @@ public:
         return obj;
     }
 
-    void sendNewPostsRequest(FeedLambda callback);
-    void sendCommentsRequest(quint32 postId, FeedLambda callback);
+    void requestNewPosts(FeedLambda callback);
+    void requestComments(quint32 postId, FeedLambda callback);
 
 signals:
 
@@ -36,9 +36,9 @@ private:
     explicit RequestManager(QObject *parent = 0);
     RequestManager(RequestManager &) {}
 
-    void sendAuthRequest();
-    void sendUserRequest();
-    void sendGeoRequest();
+    void requestAuth();
+    void requestUserInfo();
+    void requestGeoInfo();
 
     QNetworkRequest requestFromUrlParts(const QString &urlPart, const QString &urlJsonText = QString());
     static QJsonArray arrayFromReply(QNetworkReply *reply);

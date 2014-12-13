@@ -29,12 +29,12 @@ RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNe
         reply->deleteLater();
     });
 
-    sendAuthRequest();
-    sendUserRequest();
-    sendGeoRequest();
+    requestAuth();
+    requestUserInfo();
+    requestGeoInfo();
 }
 
-void RequestManager::sendNewPostsRequest(FeedLambda callback)
+void RequestManager::requestNewPosts(FeedLambda callback)
 {
     auto reply = _qnam->get(requestFromUrlParts(QLatin1String("Horn/New/"), QLatin1String("{\"limit\":50,\"conditions\":{\"0\":{\"lang\":\"ru\"}}}")));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
@@ -64,7 +64,7 @@ void RequestManager::sendNewPostsRequest(FeedLambda callback)
     });
 }
 
-void RequestManager::sendCommentsRequest(quint32 postId, FeedLambda callback)
+void RequestManager::requestComments(quint32 postId, FeedLambda callback)
 {
     QJsonObject dic;
     dic["horn_id"] = QJsonValue(static_cast<int>(postId));
@@ -94,7 +94,7 @@ void RequestManager::sendCommentsRequest(quint32 postId, FeedLambda callback)
 
 // private
 
-void RequestManager::sendAuthRequest()
+void RequestManager::requestAuth()
 {
     auto buf = new QBuffer;
     buf->buffer() = "{}";
@@ -106,7 +106,7 @@ void RequestManager::sendAuthRequest()
         deleteBufLambda();
 }
 
-void RequestManager::sendUserRequest()
+void RequestManager::requestUserInfo()
 {
     auto reply = _qnam->get(requestFromUrlParts(QString("User/%1").arg(kUserId)));
     connect(reply, &QNetworkReply::finished, [reply]{
@@ -120,7 +120,7 @@ void RequestManager::sendUserRequest()
     });
 }
 
-void RequestManager::sendGeoRequest()
+void RequestManager::requestGeoInfo()
 {
     _qnam->get(requestFromUrlParts(QLatin1String("IpGeo/1")));
 }

@@ -18,13 +18,13 @@ Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedMode
 
     connect(ui->listView, &QListView::doubleClicked, [this](const QModelIndex &index) {
         FeedItem *item = _feedModel->itemAtModelIndex(index);
-        RequestManager::instance().sendCommentsRequest(item->id, [item, this](const TextItemList &comments) {
+        RequestManager::instance().requestComments(item->id, [item, this](const TextItemList &comments) {
             CommentsWidget *w = new CommentsWidget(item, comments, this, Qt::Window);
             w->show();
         });
     });
 
-    RequestManager::instance().sendNewPostsRequest([this](const TextItemList &feed) {
+    RequestManager::instance().requestNewPosts([this](const TextItemList &feed) {
         _feedModel->setDataSource(feed);
         for (int i = 0; i < feed.size(); ++i)
             ui->listView->openPersistentEditor(_feedModel->index(i));
