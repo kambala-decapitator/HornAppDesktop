@@ -21,7 +21,7 @@ public:
 private:
     Ui::CommentsWidget *ui;
 
-    void addComment(const QString &comment, const QString &nickname = RequestManager::instance().userNickname(), qint32 reputation = 0);
+    void addComment(const QString &comment, const QString &nickname = RequestManager::instance().userNickname(), qint32 reputation = 0, const QString &recipient = QString());
 };
 
 #endif // COMMENTSWIDGET_H

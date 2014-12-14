@@ -30,7 +30,7 @@ struct FeedItem : public TextItem
 
 struct CommentItem : public TextItem
 {
-    QString nickname, recipientNickname; // TODO: read recipientNickname from response
+    QString nickname, recipientNickname;
 };
 
 typedef QList<TextItem *> TextItemList;

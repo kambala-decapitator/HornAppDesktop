@@ -10,7 +10,7 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
     for (const auto &item : comments)
     {
         CommentItem *comment = static_cast<CommentItem *>(item);
-        addComment(comment->message, comment->nickname, comment->reputation);
+        addComment(comment->message, comment->nickname, comment->reputation, comment->recipientNickname);
     }
 
     connect(ui->sendButton, &QPushButton::clicked, [feedItem, this]{
@@ -31,7 +31,10 @@ CommentsWidget::~CommentsWidget()
     delete ui;
 }
 
-void CommentsWidget::addComment(const QString &comment, const QString &nickname, qint32 reputation)
+void CommentsWidget::addComment(const QString &comment, const QString &nickname, qint32 reputation, const QString &recipient)
 {
-    ui->listWidget->addItem(QString("%1 %2: %3").arg(reputation).arg(nickname, comment));
+    QString text = QString("%1 %2: ").arg(reputation).arg(nickname);
+    if (!recipient.isEmpty())
+        text += recipient + ", ";
+    ui->listWidget->addItem(text + comment);
 }

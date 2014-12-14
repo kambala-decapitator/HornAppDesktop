@@ -82,6 +82,7 @@ void RequestManager::requestComments(quint32 postId, FeedLambda callback)
                 auto dic = value.toObject();
                 item->setupFromJson(dic);
                 item->nickname = dic["nickname"].toString();
+                item->recipientNickname = dic["reply_to_nickname"].toString();
 
                 result += item;
             }
