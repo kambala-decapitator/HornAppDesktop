@@ -18,6 +18,9 @@ public:
     explicit CommentsWidget(FeedItem *feedItem, const TextItemList &comments, QWidget *parent = 0, Qt::WindowFlags f = 0);
     ~CommentsWidget();
 
+protected:
+    bool eventFilter(QObject *o, QEvent *e);
+
 private:
     Ui::CommentsWidget *ui;
     TextItemList _comments;

@@ -7,6 +7,7 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
     ui->setupUi(this);
 
     ui->messageLabel->setText(QString("%1\n%2 | %3").arg(feedItem->message).arg(feedItem->comments).arg(feedItem->reputation));
+    ui->plainTextEdit->installEventFilter(this);
 
     for (const auto &item : comments)
     {
@@ -46,7 +47,7 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
 
     connect(ui->sendButton, &QPushButton::clicked, [feedItem, this]{
         QString comment = ui->plainTextEdit->toPlainText(), commentToSend = comment;
-        RequestManager::instance().postComment(feedItem->id, comment.remove(appealTo(_recipientNickname)), _recipientCommentId, [comment, this](bool ok){
+        RequestManager::instance().postComment(feedItem->id, commentToSend.remove(appealTo(_recipientNickname)), _recipientCommentId, [comment, this](bool ok){
             if (ok)
             {
                 addComment(comment);
@@ -64,6 +65,20 @@ CommentsWidget::~CommentsWidget()
 {
     delete ui;
     qDeleteAll(_comments);
+}
+
+bool CommentsWidget::eventFilter(QObject *o, QEvent *e)
+{
+    if (o == ui->plainTextEdit && e->type() == QEvent::KeyPress)
+    {
+        QKeyEvent *ke = static_cast<QKeyEvent *>(e);
+        if (ke->modifiers() & Qt::ControlModifier && (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter))
+        {
+            ui->sendButton->click();
+            return true;
+        }
+    }
+    return QWidget::eventFilter(o, e);
 }
 
 void CommentsWidget::addComment(const QString &comment, const QString &nickname, qint32 reputation, const QString &recipient)
