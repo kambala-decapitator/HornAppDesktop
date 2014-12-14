@@ -29,7 +29,7 @@ public:
 
     void requestNewPosts(FeedLambda callback);
     void requestComments(quint32 postId, FeedLambda callback);
-    void postComment(quint32 postId, const QString &comment, std::function<void(bool)> callback);
+    void postComment(quint32 postId, const QString &comment, quint32 recipientCommentId, std::function<void(bool)> callback);
 
 signals:
 

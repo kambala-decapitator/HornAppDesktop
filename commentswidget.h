@@ -20,8 +20,12 @@ public:
 
 private:
     Ui::CommentsWidget *ui;
+    TextItemList _comments;
+    quint32 _recipientCommentId;
+    QString _recipientNickname;
 
     void addComment(const QString &comment, const QString &nickname = RequestManager::instance().userNickname(), qint32 reputation = 0, const QString &recipient = QString());
+    QString appealTo(const QString &recipient) const;
 };
 
 #endif // COMMENTSWIDGET_H

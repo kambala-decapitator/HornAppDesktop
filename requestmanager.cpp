@@ -91,11 +91,12 @@ void RequestManager::requestComments(quint32 postId, FeedLambda callback)
     });
 }
 
-void RequestManager::postComment(quint32 postId, const QString &comment, std::function<void(bool)> callback)
+void RequestManager::postComment(quint32 postId, const QString &comment, quint32 recipientCommentId, std::function<void(bool)> callback)
 {
-    // TODO: add support for parent_id
     QJsonObject dic;
     dic["message"] = QJsonValue(comment);
+    if (recipientCommentId)
+        dic["parent_id"] = QJsonValue(static_cast<int>(recipientCommentId));
 
     auto reply = _qnam->post(requestFromUrlParts(QString("Horn/%1/Comment/").arg(postId), false), QJsonDocument(dic).toJson(QJsonDocument::Compact));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
