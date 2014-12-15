@@ -47,17 +47,19 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
 
     connect(ui->sendButton, &QPushButton::clicked, [feedItem, this]{
         QString comment = ui->plainTextEdit->toPlainText(), commentToSend = comment;
-        RequestManager::instance().postComment(feedItem->id, commentToSend.remove(appealTo(_recipientNickname)), _recipientCommentId, [comment, this](bool ok){
-            if (ok)
-            {
-                addComment(comment);
-                ui->plainTextEdit->clear();
+        commentToSend.remove(appealTo(_recipientNickname));
+        if (!commentToSend.isEmpty())
+            RequestManager::instance().postComment(feedItem->id, commentToSend, _recipientCommentId, [comment, this](bool ok){
+                if (ok)
+                {
+                    addComment(comment);
+                    ui->plainTextEdit->clear();
 
-                _recipientCommentId = 0;
-                _recipientNickname.clear();
-                // TODO: update comments counter in current widget and in parent feed
-            }
-        });
+                    _recipientCommentId = 0;
+                    _recipientNickname.clear();
+                    // TODO: update comments counter in current widget and in parent feed
+                }
+            });
     });
 }
 
