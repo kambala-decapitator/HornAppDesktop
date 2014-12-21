@@ -26,7 +26,8 @@ HEADERS  += widget.h \
     feedlistmodel.h \
     feeditemdelegate.h \
     commentswidget.h \
-    feeditemwidget.h
+    feeditemwidget.h \
+    feedlistview.hpp
 
 FORMS    += widget.ui \
     commentswidget.ui \

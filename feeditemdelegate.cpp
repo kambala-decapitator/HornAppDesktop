@@ -57,7 +57,9 @@ void FeedItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
 
 QWidget *FeedItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &/*option*/, const QModelIndex &/*index*/) const
 {
-    return new ImageWithLabelWidget(parent);
+    ImageWithLabelWidget *w = new ImageWithLabelWidget(parent);
+    w->label->installEventFilter(parent->parent()); // listview
+    return w;
 }
 
 void FeedItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &/*index*/) const
