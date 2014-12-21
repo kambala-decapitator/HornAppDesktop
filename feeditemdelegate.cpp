@@ -7,13 +7,19 @@
 #include <QLabel>
 #include <QResizeEvent>
 
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+
 class ImageWithLabelWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit ImageWithLabelWidget(QWidget *parent = 0) : QWidget(parent), background(new QLabel(this)), label(new QLabel(this))
+    explicit ImageWithLabelWidget(QWidget *parent = 0) : QWidget(parent), background(new QLabel(this)), backgroundCover(new QWidget(this)), label(new QLabel(this))
     {
+        backgroundCover->setStyleSheet("QWidget { background-color: rgba(0, 0, 0, 0.33); }");
+
+        label->setStyleSheet("QLabel { color: white; }");
         label->setAlignment(Qt::AlignCenter);
         label->setInputMethodHints(Qt::ImhMultiLine);
         label->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
@@ -21,15 +27,25 @@ public:
         label->setWordWrap(true);
     }
 
-    QLabel *background, *label;
+    void setResizedBackgroundImage(const QPixmap &pixmap) { background->setPixmap(pixmap.scaled(background->size(), Qt::KeepAspectRatioByExpanding)); }
+
+    QLabel *background;
+    QWidget *backgroundCover;
+    QLabel *label;
 
 protected:
     void resizeEvent(QResizeEvent *e)
     {
-        background->resize(e->size());
+        auto newSize = e->size();
+        backgroundCover->resize(newSize);
+
+        background->resize(newSize);
+        auto pixmap = background->pixmap();
+        if (pixmap)
+            setResizedBackgroundImage(*pixmap);
 
         label->adjustSize();
-        QSize centeredLabelOriginSize = (e->size() - label->size()) / 2;
+        auto centeredLabelOriginSize = (newSize - label->size()) / 2;
         label->move(centeredLabelOriginSize.width(), centeredLabelOriginSize.height());
     }
 };
@@ -37,15 +53,17 @@ protected:
 #include "feeditemdelegate.moc"
 
 
+QNetworkAccessManager *FeedItemDelegate::_qnam;
+
 void FeedItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QPaintDevice *paintDeviceOriginal = painter->device();
 
-    QRect r = option.rect;
+    auto r = option.rect;
     FeedItemWidget w;
     w.setGeometry(r);
 
-    FeedItem *item = itemAtIndex(index);
+    auto item = itemAtIndex(index);
     w.ui->dateTimeEdit->setDateTime(QDateTime::fromTime_t(item->timestamp));
     w.ui->reputationLcd->display(item->reputation);
     w.ui->commentsLcd->display(static_cast<int>(item->comments));
@@ -57,7 +75,7 @@ void FeedItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
 
 QWidget *FeedItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &/*option*/, const QModelIndex &/*index*/) const
 {
-    ImageWithLabelWidget *w = new ImageWithLabelWidget(parent);
+    auto w = new ImageWithLabelWidget(parent);
     w->label->installEventFilter(parent->parent()); // listview
     return w;
 }
@@ -69,7 +87,24 @@ void FeedItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionV
 
 void FeedItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
-    qobject_cast<ImageWithLabelWidget *>(editor)->label->setText(itemAtIndex(index)->message);
+    auto w = qobject_cast<ImageWithLabelWidget *>(editor);
+    auto item = itemAtIndex(index);
+    w->label->setText(item->message);
+
+    if (item->background.startsWith("http"))
+    {
+        if (!_qnam)
+            _qnam = new QNetworkAccessManager;
+
+        auto reply = _qnam->get(QNetworkRequest(QUrl(item->background)));
+        connect(reply, &QNetworkReply::finished, [reply, w]{
+            if (reply->error() == QNetworkReply::NoError)
+            {
+                auto imageData = reply->readAll();
+                w->setResizedBackgroundImage(QPixmap::fromImage(QImage::fromData(imageData)));
+            }
+        });
+    }
 }
 
 // private
