@@ -5,6 +5,37 @@
 
 #include <QPainter>
 #include <QLabel>
+#include <QResizeEvent>
+
+class ImageWithLabelWidget : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit ImageWithLabelWidget(QWidget *parent = 0) : QWidget(parent), background(new QLabel(this)), label(new QLabel(this))
+    {
+        label->setAlignment(Qt::AlignCenter);
+        label->setInputMethodHints(Qt::ImhMultiLine);
+        label->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
+        label->setOpenExternalLinks(true);
+        label->setWordWrap(true);
+    }
+
+    QLabel *background, *label;
+
+protected:
+    void resizeEvent(QResizeEvent *e)
+    {
+        background->resize(e->size());
+
+        label->adjustSize();
+        QSize centeredLabelOriginSize = (e->size() - label->size()) / 2;
+        label->move(centeredLabelOriginSize.width(), centeredLabelOriginSize.height());
+    }
+};
+
+#include "feeditemdelegate.moc"
+
 
 void FeedItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
@@ -26,26 +57,17 @@ void FeedItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
 
 QWidget *FeedItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &/*option*/, const QModelIndex &/*index*/) const
 {
-    QLabel *l = new QLabel(parent);
-    l->setAlignment(Qt::AlignCenter);
-    l->setInputMethodHints(Qt::ImhMultiLine);
-    l->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
-    l->setOpenExternalLinks(true);
-    l->setWordWrap(true);
-    return l;
+    return new ImageWithLabelWidget(parent);
 }
 
 void FeedItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &/*index*/) const
 {
     editor->setGeometry(option.rect.adjusted(0, 0, 0, -50));
-    if (!qobject_cast<QLabel *>(editor)->text().isEmpty())
-        centerWidget(editor);
 }
 
 void FeedItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
-    qobject_cast<QLabel *>(editor)->setText(itemAtIndex(index)->message);
-    centerWidget(editor);
+    qobject_cast<ImageWithLabelWidget *>(editor)->label->setText(itemAtIndex(index)->message);
 }
 
 // private
@@ -53,12 +75,4 @@ void FeedItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) 
 FeedItem *FeedItemDelegate::itemAtIndex(const QModelIndex &index) const
 {
     return static_cast<const FeedListModel *>(index.model())->itemAtModelIndex(index);
-}
-
-void FeedItemDelegate::centerWidget(QWidget *w) const
-{
-    QRect r = w->geometry();
-    w->adjustSize();
-    QSize size = w->size();
-    w->move(r.center().x() - size.width() / 2, r.center().y() - size.height() / 2);
 }

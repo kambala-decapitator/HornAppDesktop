@@ -20,7 +20,6 @@ public:
 
 private:
     FeedItem *itemAtIndex(const QModelIndex &index) const;
-    void centerWidget(QWidget *w) const;
 };
 
 #endif // FEEDITEMDELEGATE_H
