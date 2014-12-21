@@ -2,20 +2,18 @@
 #include "feeditemwidget.h"
 #include "ui_feeditemwidget.h"
 #include "feedlistmodel.h"
+#include "feedimagecache.h"
 
 #include <QPainter>
 #include <QLabel>
 #include <QResizeEvent>
-
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
 
 class ImageWithLabelWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit ImageWithLabelWidget(QWidget *parent = 0) : QWidget(parent), background(new QLabel(this)), backgroundCover(new QWidget(this)), label(new QLabel(this))
+    explicit ImageWithLabelWidget(QWidget *parent = 0) : QWidget(parent), background(new QLabel(this)), backgroundCover(new QWidget(this)), label(new QLabel(this)), originlImage(0)
     {
         backgroundCover->setStyleSheet("QWidget { background-color: rgba(0, 0, 0, 0.33); }");
 
@@ -27,11 +25,16 @@ public:
         label->setWordWrap(true);
     }
 
-    void setResizedBackgroundImage(const QPixmap &pixmap) { background->setPixmap(pixmap.scaled(background->size(), Qt::KeepAspectRatioByExpanding)); }
+    void setResizedBackgroundImage()
+    {
+        if (originlImage)
+            background->setPixmap(QPixmap::fromImage(originlImage->scaled(background->size(), Qt::KeepAspectRatioByExpanding)));
+    }
 
     QLabel *background;
     QWidget *backgroundCover;
     QLabel *label;
+    QImage *originlImage;
 
 protected:
     void resizeEvent(QResizeEvent *e)
@@ -40,9 +43,7 @@ protected:
         backgroundCover->resize(newSize);
 
         background->resize(newSize);
-        auto pixmap = background->pixmap();
-        if (pixmap)
-            setResizedBackgroundImage(*pixmap);
+        setResizedBackgroundImage();
 
         label->adjustSize();
         auto centeredLabelOriginSize = (newSize - label->size()) / 2;
@@ -52,8 +53,6 @@ protected:
 
 #include "feeditemdelegate.moc"
 
-
-QNetworkAccessManager *FeedItemDelegate::_qnam;
 
 void FeedItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
@@ -91,20 +90,10 @@ void FeedItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) 
     auto item = itemAtIndex(index);
     w->label->setText(item->message);
 
-    if (item->background.startsWith("http"))
-    {
-        if (!_qnam)
-            _qnam = new QNetworkAccessManager;
-
-        auto reply = _qnam->get(QNetworkRequest(QUrl(item->background)));
-        connect(reply, &QNetworkReply::finished, [reply, w]{
-            if (reply->error() == QNetworkReply::NoError)
-            {
-                auto imageData = reply->readAll();
-                w->setResizedBackgroundImage(QPixmap::fromImage(QImage::fromData(imageData)));
-            }
-        });
-    }
+    FeedImageCache::getImageFromUrl(item->background, [w](QImage *image){
+        w->originlImage = image;
+        w->setResizedBackgroundImage();
+    });
 }
 
 // private

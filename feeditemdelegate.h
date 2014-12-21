@@ -4,7 +4,6 @@
 #include <QStyledItemDelegate>
 
 struct FeedItem;
-class QNetworkAccessManager;
 
 class FeedItemDelegate : public QStyledItemDelegate
 {
@@ -21,8 +20,6 @@ public:
 
 private:
     FeedItem *itemAtIndex(const QModelIndex &index) const;
-
-    static QNetworkAccessManager *_qnam;
 };
 
 #endif // FEEDITEMDELEGATE_H

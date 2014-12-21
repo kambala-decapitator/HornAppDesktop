@@ -18,7 +18,8 @@ SOURCES += main.cpp\
     feedlistmodel.cpp \
     feeditemdelegate.cpp \
     commentswidget.cpp \
-    feeditemwidget.cpp
+    feeditemwidget.cpp \
+    feedimagecache.cpp
 
 HEADERS  += widget.h \
     requestmanager.h \
@@ -27,7 +28,8 @@ HEADERS  += widget.h \
     feeditemdelegate.h \
     commentswidget.h \
     feeditemwidget.h \
-    feedlistview.hpp
+    feedlistview.hpp \
+    feedimagecache.h
 
 FORMS    += widget.ui \
     commentswidget.ui \
