@@ -2,7 +2,7 @@
 #define FEEDIMAGECACHE_H
 
 #include <QString>
-#include <QHash>
+#include <QCache>
 
 #include <functional>
 
@@ -15,7 +15,7 @@ public:
     static void getImageFromUrl(const QString &urlString, std::function<void(QImage *)> successCallback);
 
 private:
-    static QHash<QString, QImage *> _imageHash;
+    static QCache<QString, QImage> _imageCache;
     static QNetworkAccessManager *_qnam;
 };
 

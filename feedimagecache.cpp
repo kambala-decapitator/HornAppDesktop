@@ -9,7 +9,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
-QHash<QString, QImage *> FeedImageCache::_imageHash;
+QCache<QString, QImage> FeedImageCache::_imageCache;
 QNetworkAccessManager   *FeedImageCache::_qnam;
 
 void FeedImageCache::getImageFromUrl(const QString &urlString, std::function<void(QImage *)> successCallback)
@@ -17,7 +17,7 @@ void FeedImageCache::getImageFromUrl(const QString &urlString, std::function<voi
     if (!urlString.startsWith("http"))
         return;
 
-    auto image = _imageHash.value(urlString);
+    auto image = _imageCache[urlString];
     if (!image)
     {
         auto cachedImagePath = QStandardPaths::locate(QStandardPaths::CacheLocation, QFileInfo(urlString).fileName());
@@ -27,7 +27,7 @@ void FeedImageCache::getImageFromUrl(const QString &urlString, std::function<voi
             if (!cachedImage.isNull())
             {
                 image = new QImage(cachedImage);
-                _imageHash.insert(urlString, image);
+                _imageCache.insert(urlString, image);
             }
         }
     }
@@ -47,7 +47,7 @@ void FeedImageCache::getImageFromUrl(const QString &urlString, std::function<voi
             image->loadFromData(reply->readAll());
 
             successCallback(image);
-            _imageHash.insert(urlString, image);
+            _imageCache.insert(urlString, image);
 
             auto cachePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
             QDir().mkpath(cachePath);
