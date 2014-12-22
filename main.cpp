@@ -1,6 +1,9 @@
-#include "widget.h"
-
 #include <QApplication>
+
+#include <QtConcurrent/QtConcurrentRun>
+
+#include "widget.h"
+#include "feedimagecache.h"
 
 int main(int argc, char *argv[])
 {
@@ -9,6 +12,8 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_WIN
     a.setFont(QFont("Segoe UI Emoji", 10));
 #endif
+
+    QtConcurrent::run(FeedImageCache::cleanCache);
 
     Widget w;
     w.show();

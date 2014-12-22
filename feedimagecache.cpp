@@ -3,6 +3,7 @@
 #include <QStandardPaths>
 #include <QFileInfo>
 #include <QDir>
+#include <QFileInfo>
 
 #include <QImage>
 
@@ -54,4 +55,12 @@ void FeedImageCache::getImageFromUrl(const QString &urlString, std::function<voi
             image->save(cachePath + "/" + QFileInfo(urlString).fileName());
         }
     });
+}
+
+void FeedImageCache::cleanCache()
+{
+    QDateTime yesterday(QDate::currentDate().addDays(-1), QTime::currentTime());
+    for (const auto &fi : QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation), QString(), QDir::Time, QDir::Files | QDir::NoDotAndDotDot).entryInfoList())
+        if (fi.created() <= yesterday)
+            QFile::remove(fi.filePath());
 }
