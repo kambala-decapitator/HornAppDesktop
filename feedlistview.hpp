@@ -3,7 +3,6 @@
 
 #include <QListView>
 #include <QMouseEvent>
-#include <QApplication>
 
 class FeedListView : public QListView
 {
@@ -14,10 +13,14 @@ public:
 protected:
     bool eventFilter(QObject *o, QEvent *e)
     {
-        if (o->inherits("QLabel") && e->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent *>(e)->button() == Qt::LeftButton)
+        if (o->inherits("QLabel") && e->type() == QEvent::MouseButtonDblClick)
         {
-            qApp->sendEvent(this, e);
-            return true;
+            auto me = static_cast<QMouseEvent *>(e);
+            if (me->button() == Qt::LeftButton)
+            {
+                emit doubleClicked(indexAt(me->pos()));
+                return true;
+            }
         }
         return QListView::eventFilter(o, e);
     }
