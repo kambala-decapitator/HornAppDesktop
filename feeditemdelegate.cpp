@@ -15,7 +15,7 @@ class ImageWithLabelWidget : public QWidget
 public:
     explicit ImageWithLabelWidget(QWidget *parent = 0) : QWidget(parent), background(new QLabel(this)), backgroundCover(new QWidget(this)), label(new QLabel(this)), originlImage(0)
     {
-        backgroundCover->setStyleSheet("QWidget { background-color: rgba(0, 0, 0, 0.33); }");
+        backgroundCover->setStyleSheet("QWidget { background-color: rgba(0, 0, 0, 0.5); }");
 
         label->setStyleSheet("QLabel { color: white; }");
         label->setAlignment(Qt::AlignCenter);
