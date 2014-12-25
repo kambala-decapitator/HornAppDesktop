@@ -21,6 +21,8 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
             return;
 
         CommentItem *comment = static_cast<CommentItem *>(_comments.at(i));
+        if (comment->nickname == RequestManager::instance().userNickname())
+            return;
         _recipientCommentId = comment->id;
 
         QString oldNickname = _recipientNickname;
