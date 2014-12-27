@@ -14,3 +14,13 @@ QVariant FeedListModel::data(const QModelIndex &index, int role) const
         return QVariant();
     }
 }
+
+void FeedListModel::setDataSource(const TextItemList &feed)
+{
+    beginResetModel();
+
+    qDeleteAll(_dataSource);
+    _dataSource = feed;
+
+    endResetModel();
+}

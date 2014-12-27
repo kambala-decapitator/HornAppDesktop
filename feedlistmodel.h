@@ -12,10 +12,10 @@ class FeedListModel : public QAbstractListModel
 public:
     explicit FeedListModel(QObject *parent = 0) : QAbstractListModel(parent) {}
 
-    int rowCount(const QModelIndex &parent) const { Q_UNUSED(parent); return _dataSource.size(); }
+    int rowCount(const QModelIndex &/*parent*/) const { return _dataSource.size(); }
     QVariant data(const QModelIndex &index, int role) const;
 
-    void setDataSource(const TextItemList &feed) { beginResetModel(); _dataSource = feed; endResetModel(); }
+    void setDataSource(const TextItemList &feed);
     FeedItem *itemAtModelIndex(const QModelIndex &index) const { return static_cast<FeedItem *>(_dataSource.at(index.row())); }
 
 signals:

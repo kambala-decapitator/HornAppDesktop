@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Widget</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="FeedListView" name="listView">
      <property name="horizontalScrollBarPolicy">
@@ -30,6 +30,13 @@
      </property>
      <property name="uniformItemSizes">
       <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="refreshButton">
+     <property name="text">
+      <string>Refresh Feed</string>
      </property>
     </widget>
    </item>
