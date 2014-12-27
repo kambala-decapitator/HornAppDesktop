@@ -8,6 +8,7 @@
 
 #include <QLabel>
 #include <QMenu>
+#include <QProgressDialog>
 
 #ifndef QT_NO_DEBUG
 #include <QDebug>
@@ -49,8 +50,14 @@ Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedMode
         }
     });
 
-    RequestManager::instance().requestNewPosts([this](const TextItemList &feed) {
+    QProgressDialog *progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, 0, Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+    progress->setWindowModality(Qt::ApplicationModal);
+    progress->show();
+
+    RequestManager::instance().requestNewPosts([progress, this](const TextItemList &feed) {
         _feedModel->setDataSource(feed);
+        delete progress;
+
         for (int i = 0; i < feed.size(); ++i)
         {
             ui->listView->openPersistentEditor(_feedModel->index(i));
