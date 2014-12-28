@@ -20,11 +20,7 @@ Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedMode
     ui->listView->setModel(_feedModel);
     ui->listView->setItemDelegate(new FeedItemDelegate(this));
 
-#ifdef Q_OS_MAC
-    ui->refreshButton->setShortcut(QKeySequence("Ctrl+R"));
-#else
     ui->refreshButton->setShortcut(QKeySequence::Refresh);
-#endif
 
     connect(ui->listView, &QListView::doubleClicked, [this](const QModelIndex &index) {
         FeedItem *item = _feedModel->itemAtModelIndex(index);
@@ -59,13 +55,13 @@ Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedMode
     connect(refreshTimer, &QTimer::timeout, ui->refreshButton, &QPushButton::click);
 
     connect(ui->refreshButton, &QPushButton::clicked, [refreshTimer, this]{
-        QProgressDialog *progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, 0, Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+        QProgressDialog *progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, 0, Qt::CustomizeWindowHint);
         progress->setWindowModality(Qt::ApplicationModal);
         progress->show();
 
         RequestManager::instance().requestNewPosts([refreshTimer, progress, this](const TextItemList &feed) {
             _feedModel->setDataSource(feed);
-            delete progress;
+            progress->deleteLater();
 
             for (int i = 0; i < feed.size(); ++i)
             {
