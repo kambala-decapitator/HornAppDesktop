@@ -10,9 +10,7 @@
 #include <QMenu>
 #include <QProgressDialog>
 
-#ifndef QT_NO_DEBUG
-#include <QDebug>
-#endif
+#include <QTimer>
 
 Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedModel(new FeedListModel(this))
 {
@@ -56,12 +54,16 @@ Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedMode
         }
     });
 
-    connect(ui->refreshButton, &QPushButton::clicked, [this]{
+    QTimer *refreshTimer = new QTimer;
+    refreshTimer->setInterval(200 * 1000);
+    connect(refreshTimer, &QTimer::timeout, ui->refreshButton, &QPushButton::click);
+
+    connect(ui->refreshButton, &QPushButton::clicked, [refreshTimer, this]{
         QProgressDialog *progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, 0, Qt::CustomizeWindowHint | Qt::WindowTitleHint);
         progress->setWindowModality(Qt::ApplicationModal);
         progress->show();
 
-        RequestManager::instance().requestNewPosts([progress, this](const TextItemList &feed) {
+        RequestManager::instance().requestNewPosts([refreshTimer, progress, this](const TextItemList &feed) {
             _feedModel->setDataSource(feed);
             delete progress;
 
@@ -70,6 +72,8 @@ Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedMode
                 ui->listView->openPersistentEditor(_feedModel->index(i));
                 qApp->processEvents();
             }
+
+            refreshTimer->start();
         });
     });
 
