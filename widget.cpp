@@ -65,8 +65,8 @@ Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedMode
 
             for (int i = 0; i < feed.size(); ++i)
             {
-                ui->listView->openPersistentEditor(_feedModel->index(i));
                 qApp->processEvents();
+                ui->listView->openPersistentEditor(_feedModel->index(i));
             }
 
             refreshTimer->start();
