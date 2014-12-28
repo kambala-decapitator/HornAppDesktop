@@ -8,12 +8,14 @@
 #include <QLabel>
 #include <QResizeEvent>
 
+#include <QtConcurrent/QtConcurrent>
+
 class ImageWithLabelWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit ImageWithLabelWidget(QWidget *parent = 0) : QWidget(parent), background(new QLabel(this)), backgroundCover(new QWidget(this)), label(new QLabel(this)), originlImage(0)
+    explicit ImageWithLabelWidget(QWidget *parent = 0) : QWidget(parent), background(new QLabel(this)), backgroundCover(new QWidget(this)), label(new QLabel(this)), originalImage(0)
     {
         backgroundCover->setStyleSheet("QWidget { background-color: rgba(0, 0, 0, 0.5); }");
 
@@ -23,18 +25,23 @@ public:
         label->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
         label->setOpenExternalLinks(true);
         label->setWordWrap(true);
+
+        connect(&imageResizeWatcher, &QFutureWatcher<QPixmap>::finished, [this]{
+            background->setPixmap(imageResizeWatcher.result());
+        });
     }
 
     void setResizedBackgroundImage()
     {
-        if (originlImage)
-            background->setPixmap(QPixmap::fromImage(originlImage->scaled(background->size(), Qt::KeepAspectRatioByExpanding)));
+        if (originalImage)
+            imageResizeWatcher.setFuture(QtConcurrent::run(this, &ImageWithLabelWidget::resizedBackgroundImagePixmap));
     }
 
     QLabel *background;
     QWidget *backgroundCover;
     QLabel *label;
-    QImage *originlImage;
+    QImage *originalImage;
+    QFutureWatcher<QPixmap> imageResizeWatcher;
 
 protected:
     void resizeEvent(QResizeEvent *e)
@@ -49,6 +56,9 @@ protected:
         auto centeredLabelOriginSize = (newSize - label->size()) / 2;
         label->move(centeredLabelOriginSize.width(), centeredLabelOriginSize.height());
     }
+
+private:
+    QPixmap resizedBackgroundImagePixmap() const { return QPixmap::fromImage(originalImage->scaled(background->size(), Qt::KeepAspectRatioByExpanding)); }
 };
 
 #include "feeditemdelegate.moc"
@@ -91,7 +101,7 @@ void FeedItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) 
     w->label->setText(item->message);
 
     FeedImageCache::getImageFromUrl(item->background, [w](QImage *image){
-        w->originlImage = image;
+        w->originalImage = image;
         w->setResizedBackgroundImage();
     });
 }
