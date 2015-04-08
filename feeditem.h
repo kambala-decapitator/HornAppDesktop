@@ -16,7 +16,7 @@ struct TextItem
     {
         timestamp = dic["dtc"].toString().toInt();
         id = dic["id"].toString().toInt();
-        message = dic["message"].toString();
+        message = dic["message"].toString().trimmed();
         reputation = dic["svotes"].toString().toInt();
     }
 };

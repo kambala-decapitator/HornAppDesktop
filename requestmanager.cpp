@@ -36,7 +36,7 @@ RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNe
 
 void RequestManager::requestNewPosts(FeedLambda callback)
 {
-    auto reply = _qnam->get(requestFromUrlParts(QLatin1String("Horn/New/"), true, QLatin1String("{\"limit\":50,\"conditions\":{\"0\":{\"lang\":\"ru\"}}}")));
+    auto reply = _qnam->get(requestFromUrlParts(QLatin1String("Horn/New/"), true, QLatin1String("{\"limit\":30,\"conditions\":{\"0\":{\"lang\":\"ru\"}}}")));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
         if (reply->error() == QNetworkReply::NoError)
         {

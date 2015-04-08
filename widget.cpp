@@ -56,7 +56,7 @@ Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedMode
 
     connect(ui->refreshButton, &QPushButton::clicked, [refreshTimer, this]{
         QProgressDialog *progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, 0, Qt::CustomizeWindowHint);
-        progress->setWindowModality(Qt::ApplicationModal);
+        progress->setWindowModality(Qt::WindowModal);
         progress->show();
 
         RequestManager::instance().requestNewPosts([refreshTimer, progress, this](const TextItemList &feed) {
