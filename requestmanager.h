@@ -27,7 +27,7 @@ public:
 
     const QString &userNickname() const { return _nickname; }
 
-    void requestNewPosts(FeedLambda callback);
+    void requestNewPosts(FeedLambda callback, quint32 postIdForOlderFeed = 0);
     void requestComments(quint32 postId, FeedLambda callback);
     void postComment(quint32 postId, const QString &comment, quint32 recipientCommentId, std::function<void(bool)> callback);
 
@@ -45,6 +45,7 @@ private:
 
     QNetworkRequest requestFromUrlParts(const QString &urlPart, bool get = true, const QString &urlJsonText = QString());
     static QJsonArray arrayFromReply(QNetworkReply *reply);
+    static QByteArray dataFromJsonObj(const QJsonObject &jsonObj);
 
 private:
     QNetworkAccessManager *_qnam;

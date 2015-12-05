@@ -16,7 +16,8 @@
 #endif
 
 static const QLatin1String kHornAppBaseUrl("http://app.hornapp.com/request/v1/");
-static const QLatin1String kToken("d7f346b2a426f2d9b18c255c605e9d27053a247adaafcb56d9ef00f5c20f240b"), kUserId("525c87a74549fa59bd41829815f024c21cc352fe6ba85aa047a3e1c73f53cf2f");
+static const QLatin1String kToken("85c76ba9049ef558e07b8728e594aa2ac9227aa893e87553e772cff9612f4b18"), kUserId("525c87a74549fa59bd41829815f024c21cc352fe6ba85aa047a3e1c73f53cf2f");
+static const int kPostsPerPage = 50;
 
 RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNetworkAccessManager)
 {
@@ -34,9 +35,26 @@ RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNe
     requestGeoInfo();
 }
 
-void RequestManager::requestNewPosts(FeedLambda callback)
+void RequestManager::requestNewPosts(FeedLambda callback, quint32 postIdForOlderFeed)
 {
-    auto reply = _qnam->get(requestFromUrlParts(QLatin1String("Horn/New/"), true, QLatin1String("{\"limit\":30,\"conditions\":{\"0\":{\"lang\":\"ru\"}}}")));
+    QJsonObject defaultCondition;
+    defaultCondition["lang"] = "ru";
+    defaultCondition["age"] = 1;
+
+    QJsonObject conditions;
+    conditions["0"] = defaultCondition;
+    if (postIdForOlderFeed)
+    {
+        QJsonObject nextPageCondition;
+        nextPageCondition["id"] = static_cast<qint64>(postIdForOlderFeed);
+        conditions["5"] = nextPageCondition;
+    }
+
+    QJsonObject dic;
+    dic["limit"] = kPostsPerPage;
+    dic["conditions"] = conditions;
+
+    auto reply = _qnam->get(requestFromUrlParts(QLatin1String("Horn/New/"), true, dataFromJsonObj(dic)));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
         if (reply->error() == QNetworkReply::NoError)
         {
@@ -67,9 +85,9 @@ void RequestManager::requestNewPosts(FeedLambda callback)
 void RequestManager::requestComments(quint32 postId, FeedLambda callback)
 {
     QJsonObject dic;
-    dic["horn_id"] = QJsonValue(static_cast<int>(postId));
+    dic["horn_id"] = QJsonValue(static_cast<qint64>(postId));
 
-    _qnam->post(requestFromUrlParts(QLatin1String("Horn/Entry/"), false), QJsonDocument(dic).toJson(QJsonDocument::Compact));
+    _qnam->post(requestFromUrlParts(QLatin1String("Horn/Entry/"), false), dataFromJsonObj(dic));
 
     auto reply = _qnam->get(requestFromUrlParts(QString("Horn/%1/Comment/").arg(postId)));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
@@ -96,10 +114,11 @@ void RequestManager::postComment(quint32 postId, const QString &comment, quint32
     QJsonObject dic;
     dic["message"] = QJsonValue(comment);
     if (recipientCommentId)
-        dic["parent_id"] = QJsonValue(static_cast<int>(recipientCommentId));
+        dic["parent_id"] = QJsonValue(static_cast<qint64>(recipientCommentId));
 
-    auto reply = _qnam->post(requestFromUrlParts(QString("Horn/%1/Comment/").arg(postId), false), QJsonDocument(dic).toJson(QJsonDocument::Compact));
+    auto reply = _qnam->post(requestFromUrlParts(QString("Horn/%1/Comment/").arg(postId), false), dataFromJsonObj(dic));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
+        qDebug() << reply->readAll(); // "{"Errors":{"ERROR_USER_CANT_POST":[]}}"
         callback(reply->error() == QNetworkReply::NoError);
     });
 }
@@ -154,4 +173,9 @@ QNetworkRequest RequestManager::requestFromUrlParts(const QString &urlPart, bool
 QJsonArray RequestManager::arrayFromReply(QNetworkReply *reply)
 {
     return QJsonDocument::fromJson(reply->readAll()).array();
+}
+
+QByteArray RequestManager::dataFromJsonObj(const QJsonObject &jsonObj)
+{
+    return QJsonDocument(jsonObj).toJson(QJsonDocument::Compact);
 }
