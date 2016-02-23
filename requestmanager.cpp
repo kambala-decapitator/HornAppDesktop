@@ -16,7 +16,7 @@
 #endif
 
 static const QLatin1String kHornAppBaseUrl("http://app.hornapp.com/request/v1/");
-static const QLatin1String kToken("85c76ba9049ef558e07b8728e594aa2ac9227aa893e87553e772cff9612f4b18"), kUserId("525c87a74549fa59bd41829815f024c21cc352fe6ba85aa047a3e1c73f53cf2f");
+static const QLatin1String kToken("5e56c301cb3a70f4204c7da23fa0938ccf9404e7bb7e80ccf1ab0a45f6512cae"), kUserId("525c87a74549fa59bd41829815f024c21cc352fe6ba85aa047a3e1c73f53cf2f");
 static const int kPostsPerPage = 50;
 
 RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNetworkAccessManager)
@@ -56,9 +56,9 @@ void RequestManager::requestNewPosts(FeedLambda callback, quint32 postIdForOlder
 
     auto reply = _qnam->get(requestFromUrlParts(QLatin1String("Horn/New/"), true, dataFromJsonObj(dic)));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
+        TextItemList result;
         if (reply->error() == QNetworkReply::NoError)
         {
-            TextItemList result;
             for (const auto &value : arrayFromReply(reply))
             {
                 FeedItem *item = new FeedItem;
@@ -77,8 +77,8 @@ void RequestManager::requestNewPosts(FeedLambda callback, quint32 postIdForOlder
 
                 result += item;
             }
-            callback(result);
         }
+        callback(result);
     });
 }
 
@@ -164,7 +164,12 @@ QNetworkRequest RequestManager::requestFromUrlParts(const QString &urlPart, bool
 
     QNetworkRequest request;
     request.setUrl(QUrl(urlString));
-    request.setHeader(QNetworkRequest::UserAgentHeader, QString("%1/%2 (Windows 8.1 x64)").arg(qApp->applicationName(), qApp->applicationVersion()));
+#ifdef Q_OS_MAC
+    QString os = "Mac OS X 10.11.3";
+#else
+    QString os = "Windows 8.1 x64";
+#endif
+    request.setHeader(QNetworkRequest::UserAgentHeader, QString("%1/%2 (%3)").arg(qApp->applicationName(), qApp->applicationVersion(), os));
     if (!get)
         request.setHeader(QNetworkRequest::ContentTypeHeader, QLatin1String("application/json; charset=utf-8"));
     return request;

@@ -4,13 +4,12 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += core gui widgets network
 
 TARGET = HornAppDesktop
 TEMPLATE = app
 
+CONFIG += c++11
 
 SOURCES += main.cpp\
         widget.cpp \
@@ -34,9 +33,3 @@ HEADERS  += widget.h \
 FORMS    += widget.ui \
     commentswidget.ui \
     feeditemwidget.ui
-
-macx {
-    *-clang*: cache()
-    QMAKE_MAC_SDK = macosx10.10
-    CONFIG += c++11
-}
