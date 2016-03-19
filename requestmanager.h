@@ -10,6 +10,7 @@
 #include "feeditem.h"
 
 typedef std::function<void(const TextItemList &)> FeedLambda;
+typedef std::function<void(bool)> SuccessLambda;
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -29,11 +30,8 @@ public:
 
     void requestNewPosts(FeedLambda callback, quint32 postIdForOlderFeed = 0);
     void requestComments(quint32 postId, FeedLambda callback);
-    void postComment(quint32 postId, const QString &comment, quint32 recipientCommentId, std::function<void(bool)> callback);
-
-signals:
-
-public slots:
+    void postComment(quint32 postId, const QString &comment, quint32 recipientCommentId, SuccessLambda callback);
+    void createPost(const QString &message, const QStringList &tags, double latitude, double longitude, SuccessLambda callback);
 
 private:
     explicit RequestManager(QObject *parent = 0);

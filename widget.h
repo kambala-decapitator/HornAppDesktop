@@ -19,8 +19,9 @@ public:
 
 private:
     Ui::Widget *ui;
-
     FeedListModel *_feedModel;
+
+    void refreshFeed();
 };
 
 #endif // WIDGET_H

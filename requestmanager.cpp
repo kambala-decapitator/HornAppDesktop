@@ -109,7 +109,7 @@ void RequestManager::requestComments(quint32 postId, FeedLambda callback)
     });
 }
 
-void RequestManager::postComment(quint32 postId, const QString &comment, quint32 recipientCommentId, std::function<void(bool)> callback)
+void RequestManager::postComment(quint32 postId, const QString &comment, quint32 recipientCommentId, SuccessLambda callback)
 {
     QJsonObject dic;
     dic["message"] = QJsonValue(comment);
@@ -117,6 +117,29 @@ void RequestManager::postComment(quint32 postId, const QString &comment, quint32
         dic["parent_id"] = QJsonValue(static_cast<qint64>(recipientCommentId));
 
     auto reply = _qnam->post(requestFromUrlParts(QString("Horn/%1/Comment/").arg(postId), false), dataFromJsonObj(dic));
+    connect(reply, &QNetworkReply::finished, [reply, callback]{
+        qDebug() << reply->readAll(); // "{"Errors":{"ERROR_USER_CANT_POST":[]}}"
+        callback(reply->error() == QNetworkReply::NoError);
+    });
+}
+
+void RequestManager::createPost(const QString &message, const QStringList &tags, double latitude, double longitude, SuccessLambda callback)
+{
+    QJsonObject dic;
+    dic["message"] = message;
+    dic["bg"] = "white:sample"; // let Horn choose image
+    dic["lang"] = "ru";
+    dic["hashtags"] = QJsonArray::fromStringList(tags);
+
+    if (!qIsNaN(latitude) && !qIsNaN(longitude))
+    {
+        QJsonObject geo;
+        geo["type"] = "Point";
+        geo["coordinates"] = QJsonArray({longitude, latitude});
+        dic["geometry"] = geo;
+    }
+
+    auto reply = _qnam->post(requestFromUrlParts("Horn/", false), dataFromJsonObj(dic));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
         qDebug() << reply->readAll(); // "{"Errors":{"ERROR_USER_CANT_POST":[]}}"
         callback(reply->error() == QNetworkReply::NoError);

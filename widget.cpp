@@ -9,6 +9,8 @@
 #include <QLabel>
 #include <QMenu>
 #include <QProgressDialog>
+#include <QInputDialog>
+#include <QMessageBox>
 
 #include <QTimer>
 
@@ -20,6 +22,7 @@ Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedMode
     ui->listView->setModel(_feedModel);
     ui->listView->setItemDelegate(new FeedItemDelegate(this));
 
+    ui->newPostButton->setShortcut(QKeySequence::New);
     ui->refreshButton->setShortcut(QKeySequence::Refresh);
 
     connect(ui->listView, &QListView::doubleClicked, [this](const QModelIndex &index) {
@@ -50,6 +53,17 @@ Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedMode
         }
     });
 
+    connect(ui->newPostButton, &QPushButton::clicked, [this]{
+        auto message = QInputDialog::getText(this, QString(), tr("Enter your message:")).trimmed();
+        if (!message.isEmpty())
+            RequestManager::instance().createPost(message, QStringList({"Various"}), qQNaN(), qQNaN(), [this](bool ok){
+                if (ok)
+                    refreshFeed();
+                else
+                    QMessageBox::critical(this, QString(), tr("Error creating new post"));
+            });
+    });
+
     QTimer *refreshTimer = new QTimer;
     refreshTimer->setInterval(200 * 1000);
     connect(refreshTimer, &QTimer::timeout, ui->refreshButton, &QPushButton::click);
@@ -73,10 +87,15 @@ Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedMode
         });
     });
 
-    ui->refreshButton->click(); // refresh feed on start
+    refreshFeed();
 }
 
 Widget::~Widget()
 {
     delete ui;
+}
+
+void Widget::refreshFeed()
+{
+    ui->refreshButton->click();
 }
