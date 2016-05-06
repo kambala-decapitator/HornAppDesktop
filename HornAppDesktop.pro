@@ -11,16 +11,17 @@ TEMPLATE = app
 
 CONFIG += c++11
 
-SOURCES += main.cpp\
-        widget.cpp \
+SOURCES += main.cpp \
+    feedwidget.cpp \
     requestmanager.cpp \
     feedlistmodel.cpp \
     feeditemdelegate.cpp \
     commentswidget.cpp \
     feeditemwidget.cpp \
-    feedimagecache.cpp
+    feedimagecache.cpp \
+    mainwindow.cpp
 
-HEADERS  += widget.h \
+HEADERS += feedwidget.h \
     requestmanager.h \
     feeditem.h \
     feedlistmodel.h \
@@ -28,8 +29,10 @@ HEADERS  += widget.h \
     commentswidget.h \
     feeditemwidget.h \
     feedlistview.hpp \
-    feedimagecache.h
+    feedimagecache.h \
+    mainwindow.h
 
-FORMS    += widget.ui \
+FORMS += feedwidget.ui \
     commentswidget.ui \
-    feeditemwidget.ui
+    feeditemwidget.ui \
+    mainwindow.ui

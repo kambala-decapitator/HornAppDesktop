@@ -2,7 +2,7 @@
 
 #include <QtConcurrent/QtConcurrentRun>
 
-#include "widget.h"
+#include "mainwindow.h"
 #include "feedimagecache.h"
 
 int main(int argc, char *argv[])
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 
     QtConcurrent::run(FeedImageCache::cleanCache);
 
-    Widget w;
+    MainWindow w;
     w.show();
 
     return a.exec();

@@ -1,0 +1,55 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include "feedwidget.h"
+#include "requestmanager.h"
+
+#include <QTabWidget>
+#include <QInputDialog>
+#include <QMessageBox>
+
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), _tabWidget(new QTabWidget(this))
+{
+    ui->setupUi(this);
+    static_cast<QBoxLayout *>(ui->centralwidget->layout())->insertWidget(0, _tabWidget);
+
+    ui->newPostButton->setShortcut(QKeySequence::New);
+    ui->refreshFeedButton->setShortcut(QKeySequence::Refresh);
+
+    auto tabs = QList<QPair<QString, QString>>({{tr("New"), "HornNew"}});
+    for (const auto &tab : QList<QPair<QString, QString>>({{tr("Commented"), "/Commented"}, {tr("Liked"), "/Liked"}, {tr("My"), QString()}}))
+        tabs << qMakePair(tab.first, "User/" + RequestManager::userID + tab.second + "/Horn");
+    tabs << qMakePair(tr("Top"), QLatin1String("HornTop"));
+    for (const auto &tab : tabs)
+    {
+        auto fw = new FeedWidget(tab.second, this);
+        _tabWidget->addTab(fw, tab.first);
+    }
+
+    connect(ui->actionNewPost, &QAction::triggered,   this, &MainWindow::createNewPost);
+    connect(ui->newPostButton, &QPushButton::clicked, this, &MainWindow::createNewPost);
+
+    connect(ui->actionRefreshFeed, &QAction::triggered,   this, &MainWindow::refreshCurrentFeed);
+    connect(ui->refreshFeedButton, &QPushButton::clicked, this, &MainWindow::refreshCurrentFeed);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::createNewPost()
+{
+    auto message = QInputDialog::getText(this, QString(), tr("Enter your message:")).trimmed();
+    if (!message.isEmpty())
+        RequestManager::instance().createPost(message, QStringList({"Various"}), qQNaN(), qQNaN(), [this](bool ok){
+            if (ok)
+                /*refreshFeed()*/;
+            else
+                QMessageBox::critical(this, QString(), tr("Error creating new post"));
+        });
+}
+
+void MainWindow::refreshCurrentFeed()
+{
+    static_cast<FeedWidget *>(_tabWidget->currentWidget())->requestFeed();
+}

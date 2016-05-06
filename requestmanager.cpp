@@ -16,8 +16,10 @@
 #endif
 
 static const QLatin1String kHornAppBaseUrl("http://app.hornapp.com/request/v1/");
-static const QLatin1String kToken("5e56c301cb3a70f4204c7da23fa0938ccf9404e7bb7e80ccf1ab0a45f6512cae"), kUserId("525c87a74549fa59bd41829815f024c21cc352fe6ba85aa047a3e1c73f53cf2f");
-static const int kPostsPerPage = 50;
+static const QLatin1String kToken("1dea204df061332e3703f385f3203327839765260fac58f94202149fa3c6aefc");
+static const int kPostsPerPage = 20;
+
+QString RequestManager::userID("525c87a74549fa59bd41829815f024c21cc352fe6ba85aa047a3e1c73f53cf2f");
 
 RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNetworkAccessManager)
 {
@@ -35,7 +37,7 @@ RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNe
     requestGeoInfo();
 }
 
-void RequestManager::requestNewPosts(FeedLambda callback, quint32 postIdForOlderFeed)
+void RequestManager::requestPostsWithRequestPart(const QString &requestPart, FeedLambda callback, quint32 postIdForOlderFeed)
 {
     QJsonObject defaultCondition;
     defaultCondition["lang"] = "ru";
@@ -54,7 +56,7 @@ void RequestManager::requestNewPosts(FeedLambda callback, quint32 postIdForOlder
     dic["limit"] = kPostsPerPage;
     dic["conditions"] = conditions;
 
-    auto reply = _qnam->get(requestFromUrlParts(QLatin1String("Horn/New/"), true, dataFromJsonObj(dic)));
+    auto reply = _qnam->get(requestFromUrlParts(requestPart + QLatin1String("/"), true, dataFromJsonObj(dic)));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
         TextItemList result;
         if (reply->error() == QNetworkReply::NoError)
@@ -162,7 +164,7 @@ void RequestManager::requestAuth()
 
 void RequestManager::requestUserInfo()
 {
-    auto reply = _qnam->get(requestFromUrlParts(QString("User/%1").arg(kUserId)));
+    auto reply = _qnam->get(requestFromUrlParts(QString("User/%1").arg(userID)));
     connect(reply, &QNetworkReply::finished, [reply, this]{
         if (reply->error() == QNetworkReply::NoError)
         {

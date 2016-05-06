@@ -20,6 +20,8 @@ class RequestManager : public QObject
     Q_OBJECT
 
 public:
+    static QString userID;
+
     static RequestManager &instance()
     {
         static RequestManager obj;
@@ -28,7 +30,7 @@ public:
 
     const QString &userNickname() const { return _nickname; }
 
-    void requestNewPosts(FeedLambda callback, quint32 postIdForOlderFeed = 0);
+    void requestPostsWithRequestPart(const QString &requestPart, FeedLambda callback, quint32 postIdForOlderFeed = 0);
     void requestComments(quint32 postId, FeedLambda callback);
     void postComment(quint32 postId, const QString &comment, quint32 recipientCommentId, SuccessLambda callback);
     void createPost(const QString &message, const QStringList &tags, double latitude, double longitude, SuccessLambda callback);

@@ -1,5 +1,5 @@
-#include "ui_widget.h"
-#include "widget.h"
+#include "ui_feedwidget.h"
+#include "feedwidget.h"
 #include "requestmanager.h"
 #include "feedlistmodel.h"
 #include "feeditemdelegate.h"
@@ -14,16 +14,13 @@
 
 #include <QTimer>
 
-Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedModel(new FeedListModel(this))
+FeedWidget::FeedWidget(const QString &requestPart, QWidget *parent) : QWidget(parent), ui(new Ui::FeedWidget), _feedModel(new FeedListModel(this)), _requestPart(requestPart), _requestFeedOnFirstShow(true)
 {
     ui->setupUi(this);
 
     ui->listView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->listView->setModel(_feedModel);
     ui->listView->setItemDelegate(new FeedItemDelegate(this));
-
-    ui->newPostButton->setShortcut(QKeySequence::New);
-    ui->refreshButton->setShortcut(QKeySequence::Refresh);
 
     connect(ui->listView, &QListView::doubleClicked, [this](const QModelIndex &index) {
         FeedItem *item = _feedModel->itemAtModelIndex(index);
@@ -52,50 +49,36 @@ Widget::Widget(QWidget *parent) : QWidget(parent), ui(new Ui::Widget), _feedMode
             QMenu::exec(QList<QAction *>() << action, ui->listView->mapToGlobal(p));
         }
     });
-
-    connect(ui->newPostButton, &QPushButton::clicked, [this]{
-        auto message = QInputDialog::getText(this, QString(), tr("Enter your message:")).trimmed();
-        if (!message.isEmpty())
-            RequestManager::instance().createPost(message, QStringList({"Various"}), qQNaN(), qQNaN(), [this](bool ok){
-                if (ok)
-                    refreshFeed();
-                else
-                    QMessageBox::critical(this, QString(), tr("Error creating new post"));
-            });
-    });
-
-    QTimer *refreshTimer = new QTimer;
-    refreshTimer->setInterval(200 * 1000);
-    connect(refreshTimer, &QTimer::timeout, ui->refreshButton, &QPushButton::click);
-
-    connect(ui->refreshButton, &QPushButton::clicked, [refreshTimer, this]{
-        QProgressDialog *progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, 0, Qt::CustomizeWindowHint);
-        progress->setWindowModality(Qt::WindowModal);
-        progress->show();
-
-        RequestManager::instance().requestNewPosts([refreshTimer, progress, this](const TextItemList &feed) {
-            _feedModel->setDataSource(feed);
-            progress->deleteLater();
-
-            for (int i = 0; i < feed.size(); ++i)
-            {
-                qApp->processEvents();
-                ui->listView->openPersistentEditor(_feedModel->index(i));
-            }
-
-            refreshTimer->start();
-        });
-    });
-
-    refreshFeed();
 }
 
-Widget::~Widget()
+FeedWidget::~FeedWidget()
 {
     delete ui;
 }
 
-void Widget::refreshFeed()
+void FeedWidget::requestFeed()
 {
-    ui->refreshButton->click();
+    QProgressDialog *progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, 0, Qt::CustomizeWindowHint);
+    progress->setWindowModality(Qt::WindowModal);
+    progress->show();
+
+    RequestManager::instance().requestPostsWithRequestPart(_requestPart, [progress, this](const TextItemList &feed) {
+        _feedModel->setDataSource(feed);
+        progress->deleteLater();
+
+        for (int i = 0; i < feed.size(); ++i)
+        {
+            qApp->processEvents();
+            ui->listView->openPersistentEditor(_feedModel->index(i));
+        }
+    });
+}
+
+void FeedWidget::showEvent(QShowEvent *)
+{
+    if (_requestFeedOnFirstShow)
+    {
+        _requestFeedOnFirstShow = false;
+        requestFeed();
+    }
 }
