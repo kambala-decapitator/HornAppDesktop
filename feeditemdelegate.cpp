@@ -68,7 +68,7 @@ void FeedItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
 {
     QPaintDevice *paintDeviceOriginal = painter->device();
 
-    auto r = option.rect;
+    auto r = option.rect.adjusted(0, 0, 25, 60);
     FeedItemWidget w;
     w.setGeometry(r);
 
@@ -91,7 +91,7 @@ QWidget *FeedItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewI
 
 void FeedItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &/*index*/) const
 {
-    editor->setGeometry(option.rect.adjusted(0, 0, 0, -50));
+    editor->setGeometry(option.rect.adjusted(0, 0, 0, -30));
 }
 
 void FeedItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
