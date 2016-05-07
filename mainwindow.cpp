@@ -12,8 +12,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->setupUi(this);
     static_cast<QBoxLayout *>(ui->centralwidget->layout())->insertWidget(0, _tabWidget);
 
-    ui->newPostButton->setShortcut(QKeySequence::New);
-    ui->refreshFeedButton->setShortcut(QKeySequence::Refresh);
+#ifdef Q_OS_MACX
+    ui->menubar->insertMenu(ui->menuHelp->menuAction(), new QMenu(tr("Edit"), ui->menubar));
+#endif
+
+    ui->actionNewPost->setShortcut(QKeySequence::New);
+    ui->actionRefreshFeed->setShortcut(QKeySequence::Refresh);
 
     auto tabs = QList<QPair<QString, QString>>({{tr("New"), "HornNew"}});
     for (const auto &tab : QList<QPair<QString, QString>>({{tr("Commented"), "/Commented"}, {tr("Liked"), "/Liked"}, {tr("My"), QString()}}))
