@@ -58,7 +58,7 @@ FeedWidget::~FeedWidget()
 
 void FeedWidget::requestFeed()
 {
-    QProgressDialog *progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, 0, Qt::CustomizeWindowHint);
+    QProgressDialog *progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, this, Qt::CustomizeWindowHint);
     progress->setWindowModality(Qt::WindowModal);
     progress->show();
 
