@@ -23,6 +23,8 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QTabWidget *_tabWidget;
+
+    void refreshFeedWithIndex(int index);
 };
 
 #endif // MAINWINDOW_H

@@ -45,11 +45,11 @@ MainWindow::~MainWindow()
 
 void MainWindow::createNewPost()
 {
-    auto message = QInputDialog::getText(this, QString(), tr("Enter your message:")).trimmed();
+    auto message = QInputDialog::getText(this, tr("New Post"), tr("Enter your message:")).trimmed();
     if (!message.isEmpty())
         RequestManager::instance().createPost(message, QStringList({"Various"}), qQNaN(), qQNaN(), [this](bool ok){
             if (ok)
-                /*refreshFeed()*/;
+                refreshFeedWithIndex(0);
             else
                 QMessageBox::critical(this, QString(), tr("Error creating new post"));
         });
@@ -57,5 +57,10 @@ void MainWindow::createNewPost()
 
 void MainWindow::refreshCurrentFeed()
 {
-    static_cast<FeedWidget *>(_tabWidget->currentWidget())->requestFeed();
+    refreshFeedWithIndex(_tabWidget->currentIndex());
+}
+
+void MainWindow::refreshFeedWithIndex(int index)
+{
+    static_cast<FeedWidget *>(_tabWidget->widget(index))->requestFeed();
 }
