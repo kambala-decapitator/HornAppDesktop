@@ -128,7 +128,12 @@ void CommentsWidget::addComment(const QString &comment, const QString &nickname,
     QString text = QString("%1 %2: ").arg(reputation).arg(nickname);
     if (!recipient.isEmpty())
         text += appealTo(recipient);
-    ui->listWidget->addItem(text + comment);
+
+    auto item = new QListWidgetItem(text + comment, ui->listWidget);
+    if (nickname == RequestManager::instance().userNickname())
+        item->setBackgroundColor(Qt::green);
+    else if (text.contains(RequestManager::instance().userNickname()))
+        item->setBackgroundColor(Qt::cyan);
 }
 
 QString CommentsWidget::appealTo(const QString &recipient) const
