@@ -47,6 +47,10 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
         ui->plainTextEdit->setFocus();
     });
 
+    connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, [this]{
+        ui->charactersCountLabel->setText(QString::number(ui->plainTextEdit->toPlainText().size()));
+    });
+
     connect(ui->sendButton, &QPushButton::clicked, [feedItem, this]{
         QString comment = ui->plainTextEdit->toPlainText(), commentToSend = comment, appealing = appealTo(_recipientNickname);
         if (!_recipientNickname.isEmpty())

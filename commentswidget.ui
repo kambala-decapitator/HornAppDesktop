@@ -66,11 +66,31 @@
     </widget>
    </item>
    <item>
-    <widget class="QPushButton" name="sendButton">
-     <property name="text">
-      <string>Send</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="charactersCountLabel">
+       <property name="text">
+        <string>0</string>
+       </property>
+       <property name="buddy">
+        <cstring>plainTextEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="sendButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Send</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
