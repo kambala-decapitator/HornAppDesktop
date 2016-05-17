@@ -8,12 +8,7 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
 
     ui->messageLabel->setText(QString("%1\n%2 | %3").arg(feedItem->message).arg(feedItem->comments).arg(feedItem->reputation));
     ui->plainTextEdit->installEventFilter(this);
-
-    for (const auto &item : comments)
-    {
-        CommentItem *comment = static_cast<CommentItem *>(item);
-        addComment(comment->message, comment->nickname, comment->reputation, comment->recipientNickname);
-    }
+    showComments(comments);
 
     connect(ui->listWidget, &QListWidget::itemDoubleClicked, [this](QListWidgetItem *item){
         int i = ui->listWidget->row(item);
@@ -49,6 +44,16 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
 
     connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, [this]{
         ui->charactersCountLabel->setText(QString::number(ui->plainTextEdit->toPlainText().size()));
+    });
+
+    connect(ui->reloadButton, &QPushButton::clicked, [feedItem, this]{
+        RequestManager::instance().requestComments(feedItem->id, [this](const TextItemList &newComments) {
+            if (!newComments.isEmpty())
+            {
+                ui->listWidget->clear();
+                showComments(newComments);
+            }
+        });
     });
 
     connect(ui->sendButton, &QPushButton::clicked, [feedItem, this]{
@@ -89,11 +94,33 @@ bool CommentsWidget::eventFilter(QObject *o, QEvent *e)
         QKeyEvent *ke = static_cast<QKeyEvent *>(e);
         if (ke->modifiers() & Qt::ControlModifier && (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter))
         {
-            ui->sendButton->click();
-            return true;
+            switch (ke->key())
+            {
+            case Qt::Key_Return: case Qt::Key_Enter:
+                ui->sendButton->click();
+                return true;
+            case Qt::Key_R:
+                if (ke->modifiers() & Qt::AltModifier)
+                {
+                    ui->reloadButton->click();
+                    return true;
+                }
+                break;
+            default:
+                break;
+            }
         }
     }
     return QWidget::eventFilter(o, e);
+}
+
+void CommentsWidget::showComments(const TextItemList &comments)
+{
+    for (const auto &item : comments)
+    {
+        CommentItem *comment = static_cast<CommentItem *>(item);
+        addComment(comment->message, comment->nickname, comment->reputation, comment->recipientNickname);
+    }
 }
 
 void CommentsWidget::addComment(const QString &comment, const QString &nickname, qint32 reputation, const QString &recipient)

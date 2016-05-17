@@ -27,6 +27,7 @@ private:
     quint32 _recipientCommentId;
     QString _recipientNickname;
 
+    void showComments(const TextItemList &comments);
     void addComment(const QString &comment, const QString &nickname = RequestManager::instance().userNickname(), qint32 reputation = 0, const QString &recipient = QString());
     QString appealTo(const QString &recipient) const;
 };

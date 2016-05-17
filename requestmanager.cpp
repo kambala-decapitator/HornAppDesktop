@@ -120,8 +120,9 @@ void RequestManager::postComment(quint32 postId, const QString &comment, quint32
 
     auto reply = _qnam->post(requestFromUrlParts(QString("Horn/%1/Comment/").arg(postId), false), dataFromJsonObj(dic));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
-        qDebug() << reply->readAll(); // "{"Errors":{"ERROR_USER_CANT_POST":[]}}"
-        callback(reply->error() == QNetworkReply::NoError);
+        auto response = reply->readAll(); // "{"Errors":{"ERROR_USER_CANT_POST":[]}}"
+        qDebug() << response;
+        callback(reply->error() == QNetworkReply::NoError && !response.isEmpty());
     });
 }
 
