@@ -7,8 +7,9 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
     ui->setupUi(this);
 
     ui->messageLabel->setText(QString("%1\n%2 | %3").arg(feedItem->message).arg(feedItem->comments).arg(feedItem->reputation));
-    ui->plainTextEdit->installEventFilter(this);
     showComments(comments);
+
+    installEventFilter(this);
 
     connect(ui->listWidget, &QListWidget::itemDoubleClicked, [this](QListWidgetItem *item){
         int i = ui->listWidget->row(item);
@@ -90,10 +91,16 @@ CommentsWidget::~CommentsWidget()
 
 bool CommentsWidget::eventFilter(QObject *o, QEvent *e)
 {
-    if (o == ui->plainTextEdit && e->type() == QEvent::KeyPress)
+    if (o == this && e->type() == QEvent::KeyPress)
     {
         QKeyEvent *ke = static_cast<QKeyEvent *>(e);
-        if (ke->modifiers() & Qt::ControlModifier && (ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter))
+        if (ke->key() == Qt::Key_Escape)
+        {
+            close();
+            return true;
+        }
+
+        if (ke->modifiers() & Qt::ControlModifier)
         {
             switch (ke->key())
             {
