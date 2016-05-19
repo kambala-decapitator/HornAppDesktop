@@ -53,7 +53,7 @@ MainWindow::~MainWindow()
 
 bool MainWindow::eventFilter(QObject *o, QEvent *e)
 {
-    if (o == _notificationsDlg && e->type() == QEvent::Close)
+    if (o == _notificationsDlg && e->type() == QEvent::Hide)
     {
         ui->actionNotifications->setChecked(false);
         return true;
