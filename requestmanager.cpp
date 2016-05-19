@@ -149,6 +149,31 @@ void RequestManager::createPost(const QString &message, const QStringList &tags,
     });
 }
 
+void RequestManager::requestNotifications(FeedLambda callback)
+{
+    QJsonObject dic({ {"conditions", QJsonObject({ {"0", QJsonObject({ {"lang", "ru"} })} })} });
+    auto reply = _qnam->get(requestFromUrlParts(QLatin1String("UserNotification/"), true, dataFromJsonObj(dic)));
+    connect(reply, &QNetworkReply::finished, [reply, callback]{
+        TextItemList result;
+        if (reply->error() == QNetworkReply::NoError)
+        {
+            for (const auto &value : arrayFromReply(reply))
+            {
+                auto item = new NotificationItem;
+                auto dic = value.toObject();
+                item->setupFromJson(dic);
+                item->isRead = dic["read"].toString() != "0";
+                item->postId = dic["horn_id"].toString().toULongLong();
+                item->commentId1 = dic["cid"].toString().toULongLong();
+                item->commentId2 = dic["pcid"].toString().toULongLong();
+                item->type = dic["type"].toString();
+                result += item;
+            }
+        }
+        callback(result);
+    });
+}
+
 // private
 
 void RequestManager::requestAuth()

@@ -47,6 +47,7 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
     });
 
     connect(ui->reloadButton, &QPushButton::clicked, [feedItem, this]{
+        // GET /request/v1/Horn/postID?token=...
         RequestManager::instance().requestComments(feedItem->id, [this](const TextItemList &newComments) {
             if (!newComments.isEmpty())
             {

@@ -34,6 +34,7 @@ public:
     void requestComments(quint32 postId, FeedLambda callback);
     void postComment(quint32 postId, const QString &comment, quint32 recipientCommentId, SuccessLambda callback);
     void createPost(const QString &message, const QStringList &tags, double latitude, double longitude, SuccessLambda callback);
+    void requestNotifications(FeedLambda callback);
 
 private:
     explicit RequestManager(QObject *parent = 0);

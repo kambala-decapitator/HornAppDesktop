@@ -19,7 +19,8 @@ SOURCES += main.cpp \
     commentswidget.cpp \
     feeditemwidget.cpp \
     feedimagecache.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    notificationsdialog.cpp
 
 HEADERS += feedwidget.h \
     requestmanager.h \
@@ -30,9 +31,11 @@ HEADERS += feedwidget.h \
     feeditemwidget.h \
     feedlistview.hpp \
     feedimagecache.h \
-    mainwindow.h
+    mainwindow.h \
+    notificationsdialog.h
 
 FORMS += feedwidget.ui \
     commentswidget.ui \
     feeditemwidget.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    notificationsdialog.ui

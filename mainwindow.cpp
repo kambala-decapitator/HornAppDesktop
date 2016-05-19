@@ -2,15 +2,19 @@
 #include "ui_mainwindow.h"
 #include "feedwidget.h"
 #include "requestmanager.h"
+#include "notificationsdialog.h"
 
 #include <QTabWidget>
 #include <QInputDialog>
 #include <QMessageBox>
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), _tabWidget(new QTabWidget(this))
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), _tabWidget(new QTabWidget(this)), _notificationsDlg(new NotificationsDialog(this))
 {
     ui->setupUi(this);
     static_cast<QBoxLayout *>(ui->centralwidget->layout())->insertWidget(0, _tabWidget);
+
+    _notificationsDlg->installEventFilter(this);
+    _notificationsDlg->show();
 
 #ifdef Q_OS_MACX
     ui->menubar->insertMenu(ui->menuHelp->menuAction(), new QMenu(tr("Edit"), ui->menubar));
@@ -36,11 +40,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->refreshFeedButton, &QPushButton::clicked, this, &MainWindow::refreshCurrentFeed);
 
     connect(ui->actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
+
+    connect(ui->actionNotifications, &QAction::triggered, [this](bool checked){
+        _notificationsDlg->setVisible(checked);
+    });
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+bool MainWindow::eventFilter(QObject *o, QEvent *e)
+{
+    if (o == _notificationsDlg && e->type() == QEvent::Close)
+    {
+        ui->actionNotifications->setChecked(false);
+        return true;
+    }
+    return QMainWindow::eventFilter(o, e);
 }
 
 void MainWindow::createNewPost()
