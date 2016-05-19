@@ -25,7 +25,7 @@ FeedWidget::FeedWidget(const QString &requestPart, QWidget *parent) : QWidget(pa
     connect(ui->listView, &QListView::doubleClicked, [this](const QModelIndex &index) {
         FeedItem *item = _feedModel->itemAtModelIndex(index);
         RequestManager::instance().requestComments(item->id, [item, this](const TextItemList &comments) {
-            CommentsWidget *w = new CommentsWidget(item, comments, this, Qt::Window);
+            CommentsWidget *w = new CommentsWidget(item, comments, false, QSet<quint32>(), this, Qt::Window);
             w->show();
         });
     });

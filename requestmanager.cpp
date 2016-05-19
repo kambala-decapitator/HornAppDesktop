@@ -57,29 +57,11 @@ void RequestManager::requestPostsWithRequestPart(const QString &requestPart, Fee
     dic["conditions"] = conditions;
 
     auto reply = _qnam->get(requestFromUrlParts(requestPart + QLatin1String("/"), true, dataFromJsonObj(dic)));
-    connect(reply, &QNetworkReply::finished, [reply, callback]{
+    connect(reply, &QNetworkReply::finished, [reply, callback, this]{
         TextItemList result;
         if (reply->error() == QNetworkReply::NoError)
-        {
             for (const auto &value : arrayFromReply(reply))
-            {
-                FeedItem *item = new FeedItem;
-                auto dic = value.toObject();
-                item->setupFromJson(dic);
-                item->comments = dic["scomms"].toString().toInt();
-
-                auto background = dic["bg"].toString();
-                if (background.isEmpty())
-                    background = dic["image"].toObject()["link"].toString();
-                item->background = background;
-
-                auto coordinates = dic["centroid"].toObject()["coordinates"].toArray();
-                if (coordinates.size() == 2)
-                    item->coordinates = QPoint(coordinates.at(0).toInt(), coordinates.at(1).toInt());
-
-                result += item;
-            }
-        }
+                result += feedItemFromJson(value.toObject());
         callback(result);
     });
 }
@@ -163,14 +145,25 @@ void RequestManager::requestNotifications(FeedLambda callback)
                 auto dic = value.toObject();
                 item->setupFromJson(dic);
                 item->isRead = dic["read"].toString() != "0";
-                item->postId = dic["horn_id"].toString().toULongLong();
-                item->commentId1 = dic["cid"].toString().toULongLong();
-                item->commentId2 = dic["pcid"].toString().toULongLong();
+                item->postId = dic["horn_id"].toDouble();
+                item->commentId1 = dic["cid"].toDouble();
+                item->commentId2 = dic["pcid"].toDouble();
                 item->type = dic["type"].toString();
                 result += item;
             }
         }
         callback(result);
+    });
+}
+
+void RequestManager::requestPostWithId(quint32 postId, std::function<void(FeedItem *)> callback)
+{
+    auto reply = _qnam->get(requestFromUrlParts(QString("Horn/%1").arg(postId)));
+    connect(reply, &QNetworkReply::finished, [reply, callback, this]{
+        FeedItem *item = 0;
+        if (reply->error() == QNetworkReply::NoError)
+            item = feedItemFromJson(QJsonDocument::fromJson(reply->readAll()).object());
+        callback(item);
     });
 }
 
@@ -216,7 +209,7 @@ QNetworkRequest RequestManager::requestFromUrlParts(const QString &urlPart, bool
     QNetworkRequest request;
     request.setUrl(QUrl(urlString));
 #ifdef Q_OS_MAC
-    QString os = "Mac OS X 10.11.3";
+    QString os = "Mac OS X 10.11.5";
 #else
     QString os = "Windows 8.1 x64";
 #endif
@@ -224,6 +217,25 @@ QNetworkRequest RequestManager::requestFromUrlParts(const QString &urlPart, bool
     if (!get)
         request.setHeader(QNetworkRequest::ContentTypeHeader, QLatin1String("application/json; charset=utf-8"));
     return request;
+}
+
+FeedItem *RequestManager::feedItemFromJson(const QJsonObject &jsonObj)
+{
+    auto item = new FeedItem;
+    item->setupFromJson(jsonObj);
+
+    item->comments = jsonObj["scomms"].toString().toInt();
+
+    auto background = jsonObj["bg"].toString();
+    if (background.isEmpty())
+        background = jsonObj["image"].toObject()["link"].toString();
+    item->background = background;
+
+    auto coordinates = jsonObj["centroid"].toObject()["coordinates"].toArray();
+    if (coordinates.size() == 2)
+        item->coordinates = QPoint(coordinates.at(0).toInt(), coordinates.at(1).toInt());
+
+    return item;
 }
 
 QJsonArray RequestManager::arrayFromReply(QNetworkReply *reply)

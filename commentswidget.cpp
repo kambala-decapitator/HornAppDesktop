@@ -1,13 +1,13 @@
 #include "commentswidget.h"
 #include "ui_commentswidget.h"
 
-CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f),
-    ui(new Ui::CommentsWidget), _comments(comments), _recipientCommentId(0)
+CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments, bool deleteItem, const QSet<quint32> &highlightedComments, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f),
+    ui(new Ui::CommentsWidget), _comments(comments), _recipientCommentId(0), _feedItem(feedItem), _deleteItem(deleteItem)
 {
     ui->setupUi(this);
 
     ui->messageLabel->setText(QString("%1\n%2 | %3").arg(feedItem->message).arg(feedItem->comments).arg(feedItem->reputation));
-    showComments(comments);
+    showComments(comments, highlightedComments);
 
     installEventFilter(this);
 
@@ -47,9 +47,9 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
         ui->charactersCountLabel->setText(QString::number(ui->plainTextEdit->toPlainText().size()));
     });
 
-    connect(ui->reloadButton, &QPushButton::clicked, [feedItem, this]{
+    connect(ui->reloadButton, &QPushButton::clicked, [this]{
         // GET /request/v1/Horn/postID?token=...
-        RequestManager::instance().requestComments(feedItem->id, [this](const TextItemList &newComments) {
+        RequestManager::instance().requestComments(_feedItem->id, [this](const TextItemList &newComments) {
             if (!newComments.isEmpty())
             {
                 ui->listWidget->clear();
@@ -58,7 +58,7 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
         });
     });
 
-    connect(ui->sendButton, &QPushButton::clicked, [feedItem, this]{
+    connect(ui->sendButton, &QPushButton::clicked, [this]{
         QString comment = ui->plainTextEdit->toPlainText(), commentToSend = comment, appealing = appealTo(_recipientNickname);
         if (!_recipientNickname.isEmpty())
         {
@@ -69,7 +69,7 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
         }
 
         if (!commentToSend.isEmpty())
-            RequestManager::instance().postComment(feedItem->id, commentToSend, _recipientCommentId, [comment, this](bool ok){
+            RequestManager::instance().postComment(_feedItem->id, commentToSend, _recipientCommentId, [comment, this](bool ok){
                 if (ok)
                 {
                     addComment(comment);
@@ -87,6 +87,8 @@ CommentsWidget::~CommentsWidget()
 {
     delete ui;
     qDeleteAll(_comments);
+    if (_deleteItem)
+        delete _feedItem;
 }
 
 bool CommentsWidget::eventFilter(QObject *o, QEvent *e)
@@ -122,16 +124,18 @@ bool CommentsWidget::eventFilter(QObject *o, QEvent *e)
     return QWidget::eventFilter(o, e);
 }
 
-void CommentsWidget::showComments(const TextItemList &comments)
+void CommentsWidget::showComments(const TextItemList &comments, const QSet<quint32> &highlightedComments)
 {
     for (const auto &item : comments)
     {
         CommentItem *comment = static_cast<CommentItem *>(item);
-        addComment(comment->message, comment->nickname, comment->reputation, comment->recipientNickname);
+        auto lwItem = addComment(comment->message, comment->nickname, comment->reputation, comment->recipientNickname);
+        if (highlightedComments.contains(comment->id))
+            lwItem->setBackgroundColor(Qt::magenta);
     }
 }
 
-void CommentsWidget::addComment(const QString &comment, const QString &nickname, qint32 reputation, const QString &recipient)
+QListWidgetItem *CommentsWidget::addComment(const QString &comment, const QString &nickname, qint32 reputation, const QString &recipient)
 {
     QString text = QString("%1 %2: ").arg(reputation).arg(nickname);
     if (!recipient.isEmpty())
@@ -142,6 +146,7 @@ void CommentsWidget::addComment(const QString &comment, const QString &nickname,
         item->setBackgroundColor(Qt::green);
     else if (text.contains(RequestManager::instance().userNickname()))
         item->setBackgroundColor(Qt::cyan);
+    return item;
 }
 
 QString CommentsWidget::appealTo(const QString &recipient) const

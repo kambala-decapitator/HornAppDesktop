@@ -15,7 +15,7 @@ struct TextItem
     void setupFromJson(const QJsonObject &dic)
     {
         timestamp = dic["dtc"].toString().toULongLong();
-        id = dic["id"].toString().toULongLong();
+        id = dic["id"].toString().toUInt();
         message = dic["message"].toString().trimmed();
         reputation = dic["svotes"].toString().toInt();
     }

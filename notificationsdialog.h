@@ -3,6 +3,8 @@
 
 #include <QDialog>
 
+#include "feeditem.h"
+
 namespace Ui {
 class NotificationsDialog;
 }
@@ -20,6 +22,7 @@ private slots:
 
 private:
     Ui::NotificationsDialog *ui;
+    TextItemList _feed;
 };
 
 #endif // NOTIFICATIONSDIALOG_H
