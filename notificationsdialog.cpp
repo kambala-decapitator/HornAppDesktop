@@ -3,11 +3,13 @@
 #include "requestmanager.h"
 #include "commentswidget.h"
 
+#include <QMessageBox>
 #include <QTimer>
 
-NotificationsDialog::NotificationsDialog(QWidget *parent) : QDialog(parent, Qt::Tool), ui(new Ui::NotificationsDialog)
+NotificationsDialog::NotificationsDialog(QWidget *parent) : QDialog(parent, Qt::Tool | Qt::WindowStaysOnTopHint), ui(new Ui::NotificationsDialog)
 {
     ui->setupUi(this);
+    setAttribute(Qt::WA_MacAlwaysShowToolWindow, true);
 
     requestNotifications();
 
@@ -20,6 +22,11 @@ NotificationsDialog::NotificationsDialog(QWidget *parent) : QDialog(parent, Qt::
         // PATCH /request/v1/UserNotification/%5B notification_id %5D?token=...
         auto notification = static_cast<NotificationItem *>(_feed.at(ui->listWidget->row(item)));
         RequestManager::instance().requestPostWithId(notification->postId, [notification, this](FeedItem *feedItem){
+            if (!feedItem)
+            {
+                QMessageBox::critical(this, QString(), tr("Error opening post"));
+                return;
+            }
             RequestManager::instance().requestComments(feedItem->id, [notification, feedItem, this](const TextItemList &comments) {
                 CommentsWidget *w = new CommentsWidget(feedItem, comments, true, QSet<quint32>({notification->commentId1, notification->commentId2}), parentWidget(), Qt::Window);
                 w->show();
