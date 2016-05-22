@@ -8,6 +8,7 @@
 namespace Ui {
 class NotificationsDialog;
 }
+class QListWidgetItem;
 
 class NotificationsDialog : public QDialog
 {
@@ -23,6 +24,11 @@ private slots:
 private:
     Ui::NotificationsDialog *ui;
     TextItemList _feed;
+
+    void setReadStateForListItem(bool isRead, QListWidgetItem *item);
+#ifdef Q_OS_MAC
+    void updateMacBadge(int value);
+#endif
 };
 
 #endif // NOTIFICATIONSDIALOG_H

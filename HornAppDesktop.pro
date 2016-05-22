@@ -39,3 +39,7 @@ FORMS += feedwidget.ui \
     feeditemwidget.ui \
     mainwindow.ui \
     notificationsdialog.ui
+
+macx {
+    QT += macextras
+}

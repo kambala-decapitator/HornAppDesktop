@@ -36,6 +36,7 @@ public:
     void createPost(const QString &message, const QStringList &tags, double latitude, double longitude, SuccessLambda callback);
     void requestNotifications(FeedLambda callback);
     void requestPostWithId(quint32 postId, std::function<void(FeedItem *)> callback);
+    void markNotificationsRead(const QList<quint32> &ids);
 
 private:
     explicit RequestManager(QObject *parent = 0);
@@ -44,6 +45,8 @@ private:
     void requestAuth();
     void requestUserInfo();
     void requestGeoInfo();
+
+    void patchRequest(const QString &urlPart, const QByteArray &data, SuccessLambda callback = [](bool){});
 
     QNetworkRequest requestFromUrlParts(const QString &urlPart, bool get = true, const QString &urlJsonText = QString());
     FeedItem *feedItemFromJson(const QJsonObject &jsonObj);

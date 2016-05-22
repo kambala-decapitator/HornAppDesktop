@@ -103,7 +103,6 @@ void RequestManager::postComment(quint32 postId, const QString &comment, quint32
     auto reply = _qnam->post(requestFromUrlParts(QString("Horn/%1/Comment/").arg(postId), false), dataFromJsonObj(dic));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
         auto response = reply->readAll(); // "{"Errors":{"ERROR_USER_CANT_POST":[]}}"
-        qDebug() << response;
         callback(reply->error() == QNetworkReply::NoError && !response.isEmpty());
     });
 }
@@ -167,18 +166,22 @@ void RequestManager::requestPostWithId(quint32 postId, std::function<void(FeedIt
     });
 }
 
+void RequestManager::markNotificationsRead(const QList<quint32> &ids)
+{
+    if (ids.isEmpty())
+        return;
+
+    QStringList stringIds;
+    for (auto id : ids)
+        stringIds << QString::number(id);
+    patchRequest(QString("UserNotification/%5B%1%5D").arg(stringIds.join(',')), "{\"read\": 1}");
+}
+
 // private
 
 void RequestManager::requestAuth()
 {
-    auto buf = new QBuffer;
-    buf->buffer() = "{}";
-    auto deleteBufLambda = [buf]{ delete buf; };
-
-    if (buf->open(QIODevice::ReadOnly))
-        connect(_qnam->sendCustomRequest(requestFromUrlParts(QString("Auth/%1").arg(kToken)), "PATCH", buf), &QNetworkReply::finished, deleteBufLambda);
-    else
-        deleteBufLambda();
+    patchRequest(QString("Auth/%1").arg(kToken), "{}");
 }
 
 void RequestManager::requestUserInfo()
@@ -198,6 +201,24 @@ void RequestManager::requestUserInfo()
 void RequestManager::requestGeoInfo()
 {
     _qnam->get(requestFromUrlParts(QLatin1String("IpGeo/1")));
+}
+
+void RequestManager::patchRequest(const QString &urlPart, const QByteArray &data, SuccessLambda callback)
+{
+    auto buf = new QBuffer;
+    buf->buffer() = data;
+    auto deleteBufLambda = [buf]{ delete buf; };
+
+    if (buf->open(QIODevice::ReadOnly))
+    {
+        auto reply = _qnam->sendCustomRequest(requestFromUrlParts(urlPart), "PATCH", buf);
+        connect(reply, &QNetworkReply::finished, [reply, callback, deleteBufLambda]{
+            callback(reply->error() == QNetworkReply::NoError);
+            deleteBufLambda();
+        });
+    }
+    else
+        deleteBufLambda();
 }
 
 QNetworkRequest RequestManager::requestFromUrlParts(const QString &urlPart, bool get, const QString &urlJsonText)

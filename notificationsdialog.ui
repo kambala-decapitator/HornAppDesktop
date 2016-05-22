@@ -13,9 +13,16 @@
   <property name="windowTitle">
    <string>Notifications</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QListWidget" name="listWidget"/>
+   </item>
+   <item>
+    <widget class="QPushButton" name="markAllReadButton">
+     <property name="text">
+      <string>Mark All Read</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
