@@ -135,7 +135,10 @@ void CommentsWidget::showComments(const QSet<quint32> &highlightedComments)
         CommentItem *comment = static_cast<CommentItem *>(item);
         auto lwItem = addComment(comment->message, comment->nickname, comment->reputation, comment->recipientNickname);
         if (highlightedComments.contains(comment->id))
+        {
             lwItem->setBackgroundColor(Qt::magenta);
+            ui->listWidget->scrollToItem(lwItem);
+        }
     }
 }
 
