@@ -7,7 +7,7 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
     ui->setupUi(this);
 
     ui->messageLabel->setText(QString("%1\n%2 | %3").arg(feedItem->message).arg(feedItem->comments).arg(feedItem->reputation));
-    showComments(comments, highlightedComments);
+    showComments(highlightedComments);
 
     installEventFilter(this);
 
@@ -52,8 +52,12 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
         RequestManager::instance().requestComments(_feedItem->id, [this](const TextItemList &newComments) {
             if (!newComments.isEmpty())
             {
+                qDeleteAll(_comments);
+                _comments = newComments;
+
                 ui->listWidget->clear();
-                showComments(newComments);
+                showComments();
+                ui->listWidget->scrollToBottom();
             }
         });
     });
@@ -124,9 +128,9 @@ bool CommentsWidget::eventFilter(QObject *o, QEvent *e)
     return QWidget::eventFilter(o, e);
 }
 
-void CommentsWidget::showComments(const TextItemList &comments, const QSet<quint32> &highlightedComments)
+void CommentsWidget::showComments(const QSet<quint32> &highlightedComments)
 {
-    for (const auto &item : comments)
+    for (auto item : _comments)
     {
         CommentItem *comment = static_cast<CommentItem *>(item);
         auto lwItem = addComment(comment->message, comment->nickname, comment->reputation, comment->recipientNickname);
