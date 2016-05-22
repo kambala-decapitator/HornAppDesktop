@@ -1,15 +1,24 @@
 #include "commentswidget.h"
 #include "ui_commentswidget.h"
 
+#include <QClipboard>
+#include <QMenu>
+
 CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments, bool deleteItem, const QSet<quint32> &highlightedComments, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f),
     ui(new Ui::CommentsWidget), _comments(comments), _recipientCommentId(0), _feedItem(feedItem), _deleteItem(deleteItem)
 {
     ui->setupUi(this);
+    installEventFilter(this);
 
     ui->messageLabel->setText(QString("%1\n%2 | %3").arg(feedItem->message).arg(feedItem->comments).arg(feedItem->reputation));
     showComments(highlightedComments);
 
-    installEventFilter(this);
+    auto copyAction = new QAction(tr("Copy"), this);
+    copyAction->setShortcut(QKeySequence::Copy);
+    connect(copyAction, &QAction::triggered, [this]{
+        qApp->clipboard()->setText(_comments.at(ui->listWidget->currentRow())->message);
+    });
+    ui->listWidget->addAction(copyAction);
 
     connect(ui->listWidget, &QListWidget::itemDoubleClicked, [this](QListWidgetItem *item){
         int i = ui->listWidget->row(item);
