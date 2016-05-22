@@ -13,10 +13,42 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
     ui->messageLabel->setText(QString("%1\n%2 | %3").arg(feedItem->message).arg(feedItem->comments).arg(feedItem->reputation));
     showComments(highlightedComments);
 
+    QList<decltype(CommentItem::id)> ids;
+    for (auto comment : comments)
+        ids << comment->id;
+    RequestManager::instance().requestCommentsVotes(ids, [this](const QHash<decltype(CommentItem::id), bool> &votesHash){
+        _votesHash = votesHash;
+    });
+
+    auto upvoteAction = new QAction(tr("Upvote"), this);
+    connect(upvoteAction, &QAction::triggered, [this]{
+        // POST /request/v1/Horn/Comment/2219125/Vote/?token=
+        // {"vote":"1"}
+    });
+    ui->listWidget->addAction(upvoteAction);
+
+    auto downvoteAction = new QAction(tr("Downvote"), this);
+    connect(downvoteAction, &QAction::triggered, [this]{
+        // POST /request/v1/Horn/Comment/2219125/Vote/?token=
+        // {"vote":"-1"}
+    });
+    ui->listWidget->addAction(downvoteAction);
+
+    auto deleteVoteAction = new QAction(tr("Delete vote"), this);
+    connect(deleteVoteAction, &QAction::triggered, [this]{
+        // DELETE /request/v1/Horn/Comment/2219125/Vote/1?token=
+    });
+    ui->listWidget->addAction(deleteVoteAction);
+
+    auto separator = new QAction(this);
+    separator->setSeparator(true);
+    ui->listWidget->addAction(separator);
+
     auto copyAction = new QAction(tr("Copy"), this);
     copyAction->setShortcut(QKeySequence::Copy);
     connect(copyAction, &QAction::triggered, [this]{
-        qApp->clipboard()->setText(_comments.at(ui->listWidget->currentRow())->message);
+        QKeyEvent copyEvent(QEvent::KeyPress, Qt::Key_C, Qt::ControlModifier);
+        qApp->sendEvent(ui->listWidget, &copyEvent);
     });
     ui->listWidget->addAction(copyAction);
 
@@ -52,12 +84,38 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
         ui->plainTextEdit->setFocus();
     });
 
+    connect(ui->listWidget, &QListWidget::currentRowChanged, [upvoteAction, downvoteAction, deleteVoteAction, this](int row){
+        auto comment = static_cast<CommentItem *>(_comments.at(row));
+        if (comment->nickname == RequestManager::instance().userNickname())
+        {
+            upvoteAction->setEnabled(false);
+            downvoteAction->setEnabled(false);
+            deleteVoteAction->setEnabled(false);
+            return;
+        }
+
+        auto commentId = comment->id;
+        auto iter = _votesHash.find(commentId);
+        if (iter != _votesHash.cend())
+        {
+            bool upvoted = iter.value() == 1;
+            upvoteAction->setEnabled(!upvoted);
+            downvoteAction->setEnabled(upvoted);
+            deleteVoteAction->setEnabled(true);
+        }
+        else
+        {
+            upvoteAction->setEnabled(true);
+            downvoteAction->setEnabled(true);
+            deleteVoteAction->setEnabled(false);
+        }
+    });
+
     connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, [this]{
         ui->charactersCountLabel->setText(QString::number(ui->plainTextEdit->toPlainText().size()));
     });
 
     connect(ui->reloadButton, &QPushButton::clicked, [this]{
-        // GET /request/v1/Horn/postID?token=...
         RequestManager::instance().requestComments(_feedItem->id, [this](const TextItemList &newComments) {
             if (!newComments.isEmpty())
             {

@@ -20,7 +20,7 @@ class RequestManager : public QObject
     Q_OBJECT
 
 public:
-    static QString userID;
+    static QString userHashIdentifier;
 
     static RequestManager &instance()
     {
@@ -37,6 +37,7 @@ public:
     void requestNotifications(FeedLambda callback);
     void requestPostWithId(quint32 postId, std::function<void(FeedItem *)> callback);
     void markNotificationsRead(const QList<quint32> &ids);
+    void requestCommentsVotes(const QList<quint32> &ids, std::function<void(const QHash<decltype(CommentItem::id), bool> &)> callback);
 
 private:
     explicit RequestManager(QObject *parent = 0);
@@ -47,12 +48,12 @@ private:
     void requestGeoInfo();
 
     void patchRequest(const QString &urlPart, const QByteArray &data, SuccessLambda callback = [](bool){});
-
     QNetworkRequest requestFromUrlParts(const QString &urlPart, bool get = true, const QString &urlJsonText = QString());
-    FeedItem *feedItemFromJson(const QJsonObject &jsonObj);
 
+    static FeedItem *feedItemFromJson(const QJsonObject &jsonObj);
     static QJsonArray arrayFromReply(QNetworkReply *reply);
     static QByteArray dataFromJsonObj(const QJsonObject &jsonObj);
+    static QString arrayRequestParam(const QList<quint32> &ids);
 
 private:
     QNetworkAccessManager *_qnam;

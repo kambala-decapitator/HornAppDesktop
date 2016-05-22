@@ -30,6 +30,7 @@ private:
     QString _recipientNickname;
     FeedItem *_feedItem;
     bool _deleteItem;
+    QHash<decltype(CommentItem::id), bool> _votesHash;
 
     void showComments(const QSet<quint32> &highlightedComments = QSet<quint32>());
     QListWidgetItem *addComment(const QString &comment, const QString &nickname = RequestManager::instance().userNickname(), qint32 reputation = 0, const QString &recipient = QString());

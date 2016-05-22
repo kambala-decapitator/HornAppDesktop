@@ -19,7 +19,7 @@ static const QLatin1String kHornAppBaseUrl("http://app.hornapp.com/request/v1/")
 static const QLatin1String kToken("1dea204df061332e3703f385f3203327839765260fac58f94202149fa3c6aefc");
 static const int kPostsPerPage = 20;
 
-QString RequestManager::userID("525c87a74549fa59bd41829815f024c21cc352fe6ba85aa047a3e1c73f53cf2f");
+QString RequestManager::userHashIdentifier("525c87a74549fa59bd41829815f024c21cc352fe6ba85aa047a3e1c73f53cf2f");
 
 RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNetworkAccessManager)
 {
@@ -68,10 +68,7 @@ void RequestManager::requestPostsWithRequestPart(const QString &requestPart, Fee
 
 void RequestManager::requestComments(quint32 postId, FeedLambda callback)
 {
-    QJsonObject dic;
-    dic["horn_id"] = QJsonValue(static_cast<qint64>(postId));
-
-    _qnam->post(requestFromUrlParts(QLatin1String("Horn/Entry/"), false), dataFromJsonObj(dic));
+    _qnam->post(requestFromUrlParts(QLatin1String("Horn/Entry/"), false), QString("{\"horn_id\": %1}").arg(postId).toLatin1());
 
     auto reply = _qnam->get(requestFromUrlParts(QString("Horn/%1/Comment/").arg(postId)));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
@@ -168,13 +165,28 @@ void RequestManager::requestPostWithId(quint32 postId, std::function<void(FeedIt
 
 void RequestManager::markNotificationsRead(const QList<quint32> &ids)
 {
+    if (!ids.isEmpty())
+        patchRequest("UserNotification/" + arrayRequestParam(ids), "{\"read\": 1}");
+}
+
+void RequestManager::requestCommentsVotes(const QList<quint32> &ids, std::function<void(const QHash<decltype(CommentItem::id), bool> &)> callback)
+{
     if (ids.isEmpty())
         return;
 
-    QStringList stringIds;
-    for (auto id : ids)
-        stringIds << QString::number(id);
-    patchRequest(QString("UserNotification/%5B%1%5D").arg(stringIds.join(',')), "{\"read\": 1}");
+    auto reply = _qnam->get(requestFromUrlParts("HornCommentVote/" + arrayRequestParam(ids)));
+    connect(reply, &QNetworkReply::finished, [reply, callback, this]{
+        QHash<decltype(CommentItem::id), bool> votesHash;
+        if (reply->error() == QNetworkReply::NoError)
+        {
+            for (const auto &value : QJsonDocument::fromJson(reply->readAll()).object()["votes"].toArray())
+            {
+                auto dic = value.toObject();
+                votesHash[dic["id"].toString().toUInt()] = dic["vote"] == "1";
+            }
+        }
+        callback(votesHash);
+    });
 }
 
 // private
@@ -186,14 +198,13 @@ void RequestManager::requestAuth()
 
 void RequestManager::requestUserInfo()
 {
-    auto reply = _qnam->get(requestFromUrlParts(QString("User/%1").arg(userID)));
+    auto reply = _qnam->get(requestFromUrlParts(QString("User/%1").arg(userHashIdentifier)));
     connect(reply, &QNetworkReply::finished, [reply, this]{
         if (reply->error() == QNetworkReply::NoError)
         {
             auto dic = QJsonDocument::fromJson(reply->readAll()).object();
-            auto nickname = dic["nickname"].toString();
-            qDebug() << nickname << "=" << dic["rep"].toString().toInt();
-            _nickname = nickname;
+            _nickname = dic["nickname"].toString();
+            qDebug() << _nickname << "=" << dic["rep"].toString().toInt();
         }
     });
 }
@@ -267,4 +278,12 @@ QJsonArray RequestManager::arrayFromReply(QNetworkReply *reply)
 QByteArray RequestManager::dataFromJsonObj(const QJsonObject &jsonObj)
 {
     return QJsonDocument(jsonObj).toJson(QJsonDocument::Compact);
+}
+
+QString RequestManager::arrayRequestParam(const QList<quint32> &ids)
+{
+    QStringList stringIds;
+    for (auto id : ids)
+        stringIds << QString::number(id);
+    return "%5B" + stringIds.join(',') + "%5D"; // [id1, id2, ..., idN]
 }

@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     auto tabs = QList<QPair<QString, QString>>({{tr("New"), "HornNew"}});
     for (const auto &tab : QList<QPair<QString, QString>>({{tr("Commented"), "/Commented"}, {tr("Liked"), "/Liked"}, {tr("My"), QString()}}))
-        tabs << qMakePair(tab.first, "User/" + RequestManager::userID + tab.second + "/Horn");
+        tabs << qMakePair(tab.first, "User/" + RequestManager::userHashIdentifier + tab.second + "/Horn");
     tabs << qMakePair(tr("Top"), QLatin1String("HornTop"));
     for (const auto &tab : tabs)
     {
