@@ -71,6 +71,7 @@ void FeedWidget::requestFeed()
             qApp->processEvents();
             ui->listView->openPersistentEditor(_feedModel->index(i));
         }
+        ui->listView->scrollToTop();
     });
 }
 
