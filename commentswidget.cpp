@@ -18,6 +18,8 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
         ids << comment->id;
     RequestManager::instance().requestCommentsVotes(ids, [this](const QHash<decltype(CommentItem::id), bool> &votesHash){
         _votesHash = votesHash;
+        for (int i = 0; i < _comments.size(); ++i)
+            showVoteStatusAtRow(i);
     });
 
     auto upvoteAction = new QAction(tr("Upvote"), this);
@@ -200,10 +202,12 @@ bool CommentsWidget::eventFilter(QObject *o, QEvent *e)
 
 void CommentsWidget::showComments(const QSet<quint32> &highlightedComments)
 {
-    for (auto item : _comments)
+    for (int i = 0; i < _comments.size(); ++i)
     {
-        CommentItem *comment = static_cast<CommentItem *>(item);
+        CommentItem *comment = static_cast<CommentItem *>(_comments.at(i));
         auto lwItem = addComment(comment->message, comment->nickname, comment->reputation, comment->recipientNickname);
+        showVoteStatusAtRow(i);
+
         if (highlightedComments.contains(comment->id))
         {
             lwItem->setBackgroundColor(Qt::magenta);
@@ -229,4 +233,14 @@ QListWidgetItem *CommentsWidget::addComment(const QString &comment, const QStrin
 QString CommentsWidget::appealTo(const QString &recipient) const
 {
     return recipient + ", ";
+}
+
+void CommentsWidget::showVoteStatusAtRow(int row)
+{
+    auto iter = _votesHash.find(_comments.at(row)->id);
+    if (iter != _votesHash.cend())
+    {
+        auto item = ui->listWidget->item(row);
+        item->setText((iter.value() == 1 ? "+" : "-") + item->text());
+    }
 }

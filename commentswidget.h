@@ -35,6 +35,7 @@ private:
     void showComments(const QSet<quint32> &highlightedComments = QSet<quint32>());
     QListWidgetItem *addComment(const QString &comment, const QString &nickname = RequestManager::instance().userNickname(), qint32 reputation = 0, const QString &recipient = QString());
     QString appealTo(const QString &recipient) const;
+    void showVoteStatusAtRow(int row);
 };
 
 #endif // COMMENTSWIDGET_H
