@@ -22,23 +22,63 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
             showVoteStatusAtRow(i);
     });
 
-    auto upvoteAction = new QAction(tr("Upvote"), this);
-    connect(upvoteAction, &QAction::triggered, [this]{
-        // POST /request/v1/Horn/Comment/2219125/Vote/?token=
-        // {"vote":"1"}
+    // context menu
+    auto upvoteAction = new QAction(tr("Upvote"), this), downvoteAction = new QAction(tr("Downvote"), this), deleteVoteAction = new QAction(tr("Delete vote"), this);
+
+    connect(upvoteAction, &QAction::triggered, [upvoteAction, downvoteAction, deleteVoteAction, this]{
+        int row = ui->listWidget->currentRow();
+        auto comment = _comments.at(row);
+        RequestManager::instance().changeCommentVote(comment->id, false, true, [row, comment, upvoteAction, downvoteAction, deleteVoteAction, this](bool ok){
+            if (ok)
+            {
+                bool existed = _votesHash.find(comment->id) != _votesHash.cend();
+                _votesHash[comment->id] = true;
+                comment->reputation += existed ? 2 : 1;
+                showVoteStatusAtRow(row, true);
+
+                upvoteAction->setEnabled(false);
+                downvoteAction->setEnabled(true);
+                deleteVoteAction->setEnabled(true);
+            }
+        });
     });
     ui->listWidget->addAction(upvoteAction);
 
-    auto downvoteAction = new QAction(tr("Downvote"), this);
-    connect(downvoteAction, &QAction::triggered, [this]{
-        // POST /request/v1/Horn/Comment/2219125/Vote/?token=
-        // {"vote":"-1"}
+    connect(downvoteAction, &QAction::triggered, [upvoteAction, downvoteAction, deleteVoteAction, this]{
+        int row = ui->listWidget->currentRow();
+        auto comment = _comments.at(row);
+        RequestManager::instance().changeCommentVote(comment->id, false, false, [row, comment, upvoteAction, downvoteAction, deleteVoteAction, this](bool ok){
+            if (ok)
+            {
+                bool existed = _votesHash.find(comment->id) != _votesHash.cend();
+                _votesHash[comment->id] = false;
+                comment->reputation -= existed ? 2 : 1;
+                showVoteStatusAtRow(row, true);
+
+                upvoteAction->setEnabled(true);
+                downvoteAction->setEnabled(false);
+                deleteVoteAction->setEnabled(true);
+            }
+        });
     });
     ui->listWidget->addAction(downvoteAction);
 
-    auto deleteVoteAction = new QAction(tr("Delete vote"), this);
-    connect(deleteVoteAction, &QAction::triggered, [this]{
-        // DELETE /request/v1/Horn/Comment/2219125/Vote/1?token=
+    connect(deleteVoteAction, &QAction::triggered, [upvoteAction, downvoteAction, deleteVoteAction, this]{
+        int row = ui->listWidget->currentRow();
+        auto comment = _comments.at(row);
+        RequestManager::instance().changeCommentVote(comment->id, true, true, [row, comment, upvoteAction, downvoteAction, deleteVoteAction, this](bool ok){
+            if (ok)
+            {
+                bool value = _votesHash[comment->id];
+                _votesHash.remove(comment->id);
+                value ? --comment->reputation : ++comment->reputation;
+                showVoteStatusAtRow(row, true);
+
+                upvoteAction->setEnabled(true);
+                downvoteAction->setEnabled(true);
+                deleteVoteAction->setEnabled(false);
+            }
+        });
     });
     ui->listWidget->addAction(deleteVoteAction);
 
@@ -54,6 +94,7 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
     });
     ui->listWidget->addAction(copyAction);
 
+    // connections
     connect(ui->listWidget, &QListWidget::itemDoubleClicked, [this](QListWidgetItem *item){
         int i = ui->listWidget->row(item);
         if (i >= _comments.size())
@@ -235,12 +276,17 @@ QString CommentsWidget::appealTo(const QString &recipient) const
     return recipient + ", ";
 }
 
-void CommentsWidget::showVoteStatusAtRow(int row)
+void CommentsWidget::showVoteStatusAtRow(int row, bool rewriteVote)
 {
-    auto iter = _votesHash.find(_comments.at(row)->id);
+    auto comment = _comments.at(row);
+    auto item = ui->listWidget->item(row);
+    auto text = item->text();
+    if (rewriteVote)
+        text.remove(0, text.indexOf(')')).prepend(QString("(%1").arg(comment->reputation));
+
+    auto iter = _votesHash.find(comment->id);
     if (iter != _votesHash.cend())
-    {
-        auto item = ui->listWidget->item(row);
-        item->setText((iter.value() == 1 ? "+" : "-") + item->text());
-    }
+        text.prepend(iter.value() == 1 ? "+" : "-");
+
+    item->setText(text);
 }

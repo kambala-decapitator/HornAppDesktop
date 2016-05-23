@@ -189,6 +189,19 @@ void RequestManager::requestCommentsVotes(const QList<quint32> &ids, std::functi
     });
 }
 
+void RequestManager::changeCommentVote(quint32 commentId, bool deleteVote, bool upvote, SuccessLambda callback)
+{
+    QNetworkReply *reply;
+    auto urlPart = QString("Horn/Comment/%1/Vote/").arg(commentId);
+    if (deleteVote)
+        reply = _qnam->deleteResource(requestFromUrlParts(urlPart + "1"));
+    else
+        reply = _qnam->post(requestFromUrlParts(urlPart, false), dataFromJsonObj({{"vote", upvote ? 1 : -1}}));
+    connect(reply, &QNetworkReply::finished, [reply, callback, this]{
+        callback(reply->error() == QNetworkReply::NoError);
+    });
+}
+
 // private
 
 void RequestManager::requestAuth()
@@ -234,7 +247,7 @@ void RequestManager::patchRequest(const QString &urlPart, const QByteArray &data
 
 QNetworkRequest RequestManager::requestFromUrlParts(const QString &urlPart, bool get, const QString &urlJsonText)
 {
-    auto urlString = kHornAppBaseUrl + QString("%1?token=%2").arg(urlPart, kToken);
+    auto urlString = kHornAppBaseUrl + urlPart + QLatin1String("?token=") + kToken;
     if (!urlJsonText.isEmpty())
         urlString += QLatin1String("&json=") + QString::fromUtf8(QUrl::toPercentEncoding(urlJsonText));
 

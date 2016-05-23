@@ -38,6 +38,7 @@ public:
     void requestPostWithId(quint32 postId, std::function<void(FeedItem *)> callback);
     void markNotificationsRead(const QList<quint32> &ids);
     void requestCommentsVotes(const QList<quint32> &ids, std::function<void(const QHash<decltype(CommentItem::id), bool> &)> callback);
+    void changeCommentVote(quint32 commentId, bool deleteVote, bool upvote, SuccessLambda callback);
 
 private:
     explicit RequestManager(QObject *parent = 0);
