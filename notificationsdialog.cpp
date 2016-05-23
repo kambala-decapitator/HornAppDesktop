@@ -19,7 +19,7 @@ NotificationsDialog::NotificationsDialog(QWidget *parent) : QDialog(parent, Qt::
 
     auto timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), SLOT(requestNotifications()));
-    timer->start(60 * 1000);
+    timer->start(30 * 1000);
 
     connect(ui->listWidget, &QListWidget::itemDoubleClicked, [this](QListWidgetItem *item){
         auto notification = static_cast<NotificationItem *>(_feed.at(ui->listWidget->row(item)));
