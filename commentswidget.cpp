@@ -214,7 +214,7 @@ void CommentsWidget::showComments(const QSet<quint32> &highlightedComments)
 
 QListWidgetItem *CommentsWidget::addComment(const QString &comment, const QString &nickname, qint32 reputation, const QString &recipient)
 {
-    QString text = QString("%1 %2: ").arg(reputation).arg(nickname);
+    QString text = QString("(%1) %2: ").arg(reputation).arg(nickname);
     if (!recipient.isEmpty())
         text += appealTo(recipient);
 
