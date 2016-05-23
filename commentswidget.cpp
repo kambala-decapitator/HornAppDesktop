@@ -85,6 +85,9 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
     });
 
     connect(ui->listWidget, &QListWidget::currentRowChanged, [upvoteAction, downvoteAction, deleteVoteAction, this](int row){
+        if (row < 0 || row >= _comments.size())
+            return;
+
         auto comment = static_cast<CommentItem *>(_comments.at(row));
         if (comment->nickname == RequestManager::instance().userNickname())
         {
