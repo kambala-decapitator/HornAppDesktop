@@ -28,6 +28,10 @@ private:
     void setReadStateForListItem(bool isRead, QListWidgetItem *item);
 #ifdef Q_OS_MAC
     void updateMacBadge(int value);
+
+    void displaySystemNotification(const QString &text, quint32 notificationId);
+    void removeSystemNotificationWithId(quint32 notificationId);
+    void removeSystemNotifications();
 #endif
 };
 

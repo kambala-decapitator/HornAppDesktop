@@ -21,8 +21,8 @@ NotificationsDialog::NotificationsDialog(QWidget *parent) : QDialog(parent, Qt::
     connect(timer, SIGNAL(timeout()), SLOT(requestNotifications()));
     timer->start(30 * 1000);
 
-    connect(ui->listWidget, &QListWidget::itemDoubleClicked, [this](QListWidgetItem *item){
-        auto notification = static_cast<NotificationItem *>(_feed.at(ui->listWidget->row(item)));
+    connect(ui->listWidget, &QListWidget::doubleClicked, [this](const QModelIndex &index){
+        auto notification = static_cast<NotificationItem *>(_feed.at(index.row()));
         RequestManager::instance().requestPostWithId(notification->postId, [notification, this](FeedItem *feedItem){
             if (!feedItem)
             {
@@ -40,10 +40,11 @@ NotificationsDialog::NotificationsDialog(QWidget *parent) : QDialog(parent, Qt::
             RequestManager::instance().markNotificationsRead({notification->id});
 
             notification->isRead = true;
-            setReadStateForListItem(true, item);
+            setReadStateForListItem(true, ui->listWidget->item(index.row()));
 
 #ifdef Q_OS_MAC
             updateMacBadge(QtMac::badgeLabelText().toInt() - 1);
+            removeSystemNotificationWithId(notification->id);
 #endif
         }
     });
@@ -63,6 +64,7 @@ NotificationsDialog::NotificationsDialog(QWidget *parent) : QDialog(parent, Qt::
 
 #ifdef Q_OS_MAC
         updateMacBadge(0);
+        removeSystemNotifications();
 #endif
     });
 }
@@ -90,9 +92,6 @@ void NotificationsDialog::requestNotifications()
         for (auto item : feed)
         {
             auto notification = static_cast<NotificationItem *>(item);
-            if (!notification->isRead)
-                ++unread;
-
             auto lwItem = new QListWidgetItem(ui->listWidget);
             setReadStateForListItem(notification->isRead, lwItem);
 
@@ -108,6 +107,14 @@ void NotificationsDialog::requestNotifications()
                 lwItem->setText(tr("post vote removed"));
             else
                 lwItem->setText(notification->type + " - " + notification->message);
+
+            if (!notification->isRead)
+            {
+                ++unread;
+#ifdef Q_OS_MAC
+                displaySystemNotification(lwItem->text(), notification->id);
+#endif
+            }
         }
 
         if (unread && hasNew)
