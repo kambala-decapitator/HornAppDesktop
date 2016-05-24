@@ -100,8 +100,12 @@ void NotificationsDialog::requestNotifications()
                 lwItem->setText(notification->message);
             else if (notification->type == QLatin1String("NOTICE_NEW_HORN_COMMENT_VOTE"))
                 lwItem->setText(tr("comment vote"));
+            else if (notification->type == QLatin1String("NOTICE_DEL_HORN_COMMENT_VOTE"))
+                lwItem->setText(tr("comment vote removed"));
             else if (notification->type == QLatin1String("NOTICE_NEW_HORN_VOTE"))
                 lwItem->setText(tr("post vote"));
+            else if (notification->type == QLatin1String("NOTICE_DEL_HORN_VOTE"))
+                lwItem->setText(tr("post vote removed"));
             else
                 lwItem->setText(notification->type + " - " + notification->message);
         }
