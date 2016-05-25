@@ -17,7 +17,7 @@
 
 static const QLatin1String kHornAppBaseUrl("http://app.hornapp.com/request/v1/");
 static const QLatin1String kToken("1dea204df061332e3703f385f3203327839765260fac58f94202149fa3c6aefc");
-static const int kPostsPerPage = 20;
+static const int kPostsPerPage = 50;
 
 QString RequestManager::userHashIdentifier("525c87a74549fa59bd41829815f024c21cc352fe6ba85aa047a3e1c73f53cf2f");
 

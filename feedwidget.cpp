@@ -92,6 +92,25 @@ void FeedWidget::requestFeed()
     });
 }
 
+void FeedWidget::loadNextPosts()
+{
+    auto progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, this, Qt::CustomizeWindowHint);
+    progress->setWindowModality(Qt::WindowModal);
+    progress->show();
+
+    RequestManager::instance().requestPostsWithRequestPart(_requestPart, [progress, this](const TextItemList &feed) {
+        int oldSize = _feedModel->rowCount();
+        _feedModel->appendItems(feed);
+        progress->deleteLater();
+
+        for (int i = oldSize; i < _feedModel->rowCount(); ++i)
+        {
+            qApp->processEvents();
+            ui->listView->openPersistentEditor(_feedModel->index(i));
+        }
+    }, _feedModel->itemAtModelIndex(_feedModel->index(_feedModel->rowCount() - 1))->id);
+}
+
 bool FeedWidget::eventFilter(QObject *o, QEvent *e)
 {
     if (e->type() != QEvent::KeyPress || static_cast<QKeyEvent *>(e)->key() != Qt::Key_Escape)

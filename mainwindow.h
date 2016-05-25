@@ -8,6 +8,7 @@ class MainWindow;
 }
 class QTabWidget;
 class NotificationsDialog;
+class FeedWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -30,6 +31,7 @@ private:
     NotificationsDialog *_notificationsDlg;
 
     void refreshFeedWithIndex(int index);
+    FeedWidget *feedWidgetWithIndex(int index);
 };
 
 #endif // MAINWINDOW_H

@@ -18,6 +18,7 @@ public:
     ~FeedWidget();
 
     void requestFeed();
+    void loadNextPosts();
 
 protected:
     bool eventFilter(QObject *o, QEvent *e);

@@ -44,6 +44,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->actionNotifications, &QAction::triggered, [this](bool checked){
         _notificationsDlg->setVisible(checked);
     });
+
+    connect(ui->loadNextPostsButton, &QPushButton::clicked, [this]{
+        feedWidgetWithIndex(_tabWidget->currentIndex())->loadNextPosts();
+    });
 }
 
 MainWindow::~MainWindow()
@@ -80,5 +84,10 @@ void MainWindow::refreshCurrentFeed()
 
 void MainWindow::refreshFeedWithIndex(int index)
 {
-    static_cast<FeedWidget *>(_tabWidget->widget(index))->requestFeed();
+    feedWidgetWithIndex(index)->requestFeed();
+}
+
+FeedWidget *MainWindow::feedWidgetWithIndex(int index)
+{
+    return static_cast<FeedWidget *>(_tabWidget->widget(index));
 }

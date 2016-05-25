@@ -24,3 +24,10 @@ void FeedListModel::setDataSource(const TextItemList &feed)
 
     endResetModel();
 }
+
+void FeedListModel::appendItems(const TextItemList &feed)
+{
+    beginInsertRows(QModelIndex(), _dataSource.size(), _dataSource.size() + feed.size() - 1);
+    _dataSource.append(feed);
+    endInsertRows();
+}
