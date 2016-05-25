@@ -1,7 +1,6 @@
 #include "commentswidget.h"
 #include "ui_commentswidget.h"
 
-#include <QClipboard>
 #include <QMenu>
 
 CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments, bool deleteItem, const QSet<quint32> &highlightedComments, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f),

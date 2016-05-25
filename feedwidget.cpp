@@ -11,6 +11,7 @@
 #include <QProgressDialog>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QClipboard>
 
 #include <QTimer>
 
@@ -35,16 +36,31 @@ FeedWidget::FeedWidget(const QString &requestPart, QWidget *parent) : QWidget(pa
         {
             auto action = new QAction(tr("Open image"), ui->listView);
             connect(action, &QAction::triggered, [index, this]{
-                FeedItem *item = _feedModel->itemAtModelIndex(index);
-                FeedImageCache::getImageFromUrl(item->background, [this](QImage *image) {
+                auto imageUrl = _feedModel->itemAtModelIndex(index)->background;
+                FeedImageCache::getImageFromUrl(imageUrl, [imageUrl, this](QImage *image) {
                     auto imageWindow = new QLabel(this, Qt::Dialog);
                     imageWindow->setAttribute(Qt::WA_DeleteOnClose);
                     imageWindow->setPixmap(QPixmap::fromImage(*image));
                     imageWindow->setScaledContents(true);
+                    imageWindow->setContextMenuPolicy(Qt::ActionsContextMenu);
                     imageWindow->installEventFilter(this);
                     imageWindow->adjustSize();
                     imageWindow->resize(imageWindow->height() * image->width() / image->height(), imageWindow->height());
                     imageWindow->show();
+
+                    auto copyImageUrlAction = new QAction(tr("Copy URL"), imageWindow);
+                    copyImageUrlAction->setShortcut(QKeySequence::Copy);
+                    connect(copyImageUrlAction, &QAction::triggered, [imageUrl]{
+                        qApp->clipboard()->setText(imageUrl);
+                    });
+                    imageWindow->addAction(copyImageUrlAction);
+
+                    auto copyImageAction = new QAction(tr("Copy Image"), imageWindow);
+                    copyImageAction->setShortcut({"Ctrl+Shift+C"});
+                    connect(copyImageAction, &QAction::triggered, [image]{
+                        qApp->clipboard()->setImage(*image);
+                    });
+                    imageWindow->addAction(copyImageAction);
                 });
             });
             QMenu::exec(QList<QAction *>() << action, ui->listView->mapToGlobal(p));
