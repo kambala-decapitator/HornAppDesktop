@@ -23,17 +23,17 @@ FeedWidget::FeedWidget(const QString &requestPart, QWidget *parent) : QWidget(pa
     ui->listView->setItemDelegate(new FeedItemDelegate(this));
 
     connect(ui->listView, &QListView::doubleClicked, [this](const QModelIndex &index) {
-        FeedItem *item = _feedModel->itemAtModelIndex(index);
+        auto item = _feedModel->itemAtModelIndex(index);
         RequestManager::instance().requestComments(item->id, [item, this](const TextItemList &comments) {
-            CommentsWidget *w = new CommentsWidget(item, comments, false, QSet<quint32>(), this, Qt::Window);
+            auto w = new CommentsWidget(item, comments, false, QSet<quint32>(), this, Qt::Window);
             w->show();
         });
     });
     connect(ui->listView, &QListView::customContextMenuRequested, [this](const QPoint &p) {
-        QModelIndex index = ui->listView->indexAt(p);
+        auto index = ui->listView->indexAt(p);
         if (index.isValid())
         {
-            QAction *action = new QAction(tr("Open image"), ui->listView);
+            auto action = new QAction(tr("Open image"), ui->listView);
             connect(action, &QAction::triggered, [index, this]{
                 FeedItem *item = _feedModel->itemAtModelIndex(index);
                 FeedImageCache::getImageFromUrl(item->background, [this](QImage *image) {
@@ -58,7 +58,7 @@ FeedWidget::~FeedWidget()
 
 void FeedWidget::requestFeed()
 {
-    QProgressDialog *progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, this, Qt::CustomizeWindowHint);
+    auto progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, this, Qt::CustomizeWindowHint);
     progress->setWindowModality(Qt::WindowModal);
     progress->show();
 
