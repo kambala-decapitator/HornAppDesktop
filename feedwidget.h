@@ -20,6 +20,7 @@ public:
     void requestFeed();
 
 protected:
+    bool eventFilter(QObject *o, QEvent *e);
     void showEvent(QShowEvent *);
 
 private:

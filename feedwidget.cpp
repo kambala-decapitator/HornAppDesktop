@@ -41,6 +41,7 @@ FeedWidget::FeedWidget(const QString &requestPart, QWidget *parent) : QWidget(pa
                     imageWindow->setAttribute(Qt::WA_DeleteOnClose);
                     imageWindow->setPixmap(QPixmap::fromImage(*image));
                     imageWindow->setScaledContents(true);
+                    imageWindow->installEventFilter(this);
                     imageWindow->adjustSize();
                     imageWindow->resize(imageWindow->height() * image->width() / image->height(), imageWindow->height());
                     imageWindow->show();
@@ -73,6 +74,15 @@ void FeedWidget::requestFeed()
         }
         ui->listView->scrollToTop();
     });
+}
+
+bool FeedWidget::eventFilter(QObject *o, QEvent *e)
+{
+    if (e->type() != QEvent::KeyPress || static_cast<QKeyEvent *>(e)->key() != Qt::Key_Escape)
+        return QWidget::eventFilter(o, e);
+
+    qobject_cast<QWidget *>(o)->close();
+    return true;
 }
 
 void FeedWidget::showEvent(QShowEvent *)
