@@ -37,12 +37,12 @@ FeedWidget::FeedWidget(const QString &requestPart, QWidget *parent) : QWidget(pa
             connect(action, &QAction::triggered, [index, this]{
                 FeedItem *item = _feedModel->itemAtModelIndex(index);
                 FeedImageCache::getImageFromUrl(item->background, [this](QImage *image) {
-                    QLabel *imageWindow = new QLabel(this, Qt::Window);
+                    auto imageWindow = new QLabel(this, Qt::Dialog);
                     imageWindow->setAttribute(Qt::WA_DeleteOnClose);
                     imageWindow->setPixmap(QPixmap::fromImage(*image));
+                    imageWindow->setScaledContents(true);
                     imageWindow->adjustSize();
-                    imageWindow->setMinimumSize(imageWindow->size());
-                    imageWindow->setWindowTitle(tr("Image"));
+                    imageWindow->resize(imageWindow->height() * image->width() / image->height(), imageWindow->height());
                     imageWindow->show();
                 });
             });
