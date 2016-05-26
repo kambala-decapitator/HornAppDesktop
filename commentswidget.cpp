@@ -245,7 +245,7 @@ void CommentsWidget::showComments(const QSet<quint32> &highlightedComments)
     for (int i = 0; i < _comments.size(); ++i)
     {
         CommentItem *comment = static_cast<CommentItem *>(_comments.at(i));
-        auto lwItem = addComment(comment->message, comment->nickname, comment->reputation, comment->recipientNickname);
+        auto lwItem = addComment(comment->message, comment->nickname, comment->reputation, comment->recipientNickname, QDateTime::fromTime_t(comment->timestamp));
         showVoteStatusAtRow(i);
 
         if (highlightedComments.contains(comment->id))
@@ -256,9 +256,18 @@ void CommentsWidget::showComments(const QSet<quint32> &highlightedComments)
     }
 }
 
-QListWidgetItem *CommentsWidget::addComment(const QString &comment, const QString &nickname, qint32 reputation, const QString &recipient)
+QListWidgetItem *CommentsWidget::addComment(const QString &comment, const QString &nickname, qint32 reputation, const QString &recipient, const QDateTime &dateTime)
 {
-    QString text = QString("(%1) %2: ").arg(reputation).arg(nickname);
+    auto today = QDate::currentDate(), date = dateTime.date();
+    QLatin1String dateFormat;
+    if (!date.daysTo(today))
+        dateFormat = QLatin1String("h:mm");
+    else if (date.year() == today.year())
+        dateFormat = QLatin1String("d.M h:mm");
+    else
+        dateFormat = QLatin1String("d.M.yy h:mm");
+
+    QString text = QString("(%1) [%2] %3: ").arg(reputation).arg(dateTime.toString(dateFormat), nickname);
     if (!recipient.isEmpty())
         text += appealTo(recipient);
 
