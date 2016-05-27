@@ -95,18 +95,20 @@ void NotificationsDialog::requestNotifications()
             auto lwItem = new QListWidgetItem(ui->listWidget);
             setReadStateForListItem(notification->isRead, lwItem);
 
+            QString text;
             if (notification->type == QLatin1String("NOTICE_NEW_HORN_COMMENT_REPLY") || notification->type == QLatin1String("NOTICE_NEW_HORN_COMMENT"))
-                lwItem->setText(notification->message);
+                text = notification->message;
             else if (notification->type == QLatin1String("NOTICE_NEW_HORN_COMMENT_VOTE"))
-                lwItem->setText(tr("comment vote"));
+                text = tr("comment vote");
             else if (notification->type == QLatin1String("NOTICE_DEL_HORN_COMMENT_VOTE"))
-                lwItem->setText(tr("comment vote removed"));
+                text = tr("comment vote removed");
             else if (notification->type == QLatin1String("NOTICE_NEW_HORN_VOTE"))
-                lwItem->setText(tr("post vote"));
+                text = tr("post vote");
             else if (notification->type == QLatin1String("NOTICE_DEL_HORN_VOTE"))
-                lwItem->setText(tr("post vote removed"));
+                text = tr("post vote removed");
             else
-                lwItem->setText(notification->type + " - " + notification->message);
+                text = notification->type + " - " + notification->message;
+            lwItem->setText(text + QString(" [%1]").arg(notification->postId));
 
             if (!notification->isRead)
             {
