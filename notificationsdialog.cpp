@@ -114,7 +114,7 @@ void NotificationsDialog::requestNotifications()
             {
                 ++unread;
 #ifdef Q_OS_MAC
-                displaySystemNotification(lwItem->text(), notification->id);
+                displaySystemNotification(text, notification->id);
 #endif
             }
         }
