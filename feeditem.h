@@ -4,6 +4,7 @@
 #include <QString>
 #include <QPoint>
 #include <QJsonObject>
+#include <QGeoCoordinate>
 
 struct TextItem
 {
@@ -24,7 +25,7 @@ struct TextItem
 struct FeedItem : public TextItem
 {
     QString background;
-    QPoint coordinates;
+    QGeoCoordinate coordinates;
     quint32 comments;
 };
 

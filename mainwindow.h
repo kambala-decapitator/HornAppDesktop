@@ -6,9 +6,11 @@
 namespace Ui {
 class MainWindow;
 }
-class QTabWidget;
 class NotificationsDialog;
 class FeedWidget;
+
+class QTabWidget;
+class QGeoPositionInfoSource;
 
 class MainWindow : public QMainWindow
 {
@@ -29,6 +31,7 @@ private:
     Ui::MainWindow *ui;
     QTabWidget *_tabWidget;
     NotificationsDialog *_notificationsDlg;
+    QGeoPositionInfoSource *_geoSource;
 
     void refreshFeedWithIndex(int index);
     FeedWidget *feedWidgetWithIndex(int index);

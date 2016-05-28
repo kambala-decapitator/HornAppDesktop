@@ -6,15 +6,16 @@
 namespace Ui {
 class FeedWidget;
 }
-
 class FeedListModel;
+
+class QGeoPositionInfoSource;
 
 class FeedWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit FeedWidget(const QString &requestPart, QWidget *parent = 0);
+    explicit FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSource, QWidget *parent = 0);
     ~FeedWidget();
 
     void requestFeed();
@@ -29,6 +30,7 @@ private:
     FeedListModel *_feedModel;
     QString _requestPart;
     bool _requestFeedOnFirstShow;
+    QGeoPositionInfoSource *_geoSource;
 };
 
 #endif // WIDGET_H

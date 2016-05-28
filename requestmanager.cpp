@@ -1,6 +1,7 @@
 #include "requestmanager.h"
 
 #include <QBuffer>
+
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -278,7 +279,11 @@ FeedItem *RequestManager::feedItemFromJson(const QJsonObject &jsonObj)
 
     auto coordinates = jsonObj["centroid"].toObject()["coordinates"].toArray();
     if (coordinates.size() == 2)
-        item->coordinates = QPoint(coordinates.at(0).toInt(), coordinates.at(1).toInt());
+    {
+        auto latitude = coordinates.at(1).toDouble(), longitude = coordinates.at(0).toDouble();
+        if (latitude || longitude) // both == 0 => missing
+            item->coordinates = QGeoCoordinate(latitude, longitude);
+    }
 
     return item;
 }

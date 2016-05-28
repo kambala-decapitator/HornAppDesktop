@@ -15,7 +15,9 @@
 
 #include <QTimer>
 
-FeedWidget::FeedWidget(const QString &requestPart, QWidget *parent) : QWidget(parent), ui(new Ui::FeedWidget), _feedModel(new FeedListModel(this)), _requestPart(requestPart), _requestFeedOnFirstShow(true)
+#include <QGeoPositionInfoSource>
+
+FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSource, QWidget *parent) : QWidget(parent), ui(new Ui::FeedWidget), _feedModel(new FeedListModel(this)), _requestPart(requestPart), _requestFeedOnFirstShow(true), _geoSource(geoSource)
 {
     ui->setupUi(this);
 
@@ -28,6 +30,10 @@ FeedWidget::FeedWidget(const QString &requestPart, QWidget *parent) : QWidget(pa
         RequestManager::instance().requestComments(item->id, [item, this](const TextItemList &comments) {
             auto w = new CommentsWidget(item, comments, false, QSet<quint32>(), this, Qt::Window);
             w->show();
+
+            QString distanceStr = item->coordinates.isValid() ? tr("%1 km").arg(qRound(_geoSource->lastKnownPosition().coordinate().distanceTo(item->coordinates) / 10000) * 10)
+                                                              : tr("no geolocation");
+            w->setWindowTitle(w->windowTitle() + QString(" (%1)").arg(distanceStr));
         });
     });
     connect(ui->listView, &QListView::customContextMenuRequested, [this](const QPoint &p) {

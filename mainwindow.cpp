@@ -8,6 +8,8 @@
 #include <QInputDialog>
 #include <QMessageBox>
 
+#include <QGeoPositionInfoSource>
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), _tabWidget(new QTabWidget(this)), _notificationsDlg(new NotificationsDialog(this))
 {
     ui->setupUi(this);
@@ -23,13 +25,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->actionNewPost->setShortcut(QKeySequence::New);
     ui->actionRefreshFeed->setShortcut(QKeySequence::Refresh);
 
+    if ((_geoSource = QGeoPositionInfoSource::createDefaultSource(this)))
+        _geoSource->startUpdates();
+
     auto tabs = QList<QPair<QString, QString>>({{tr("New"), "HornNew"}});
     for (const auto &tab : QList<QPair<QString, QString>>({{tr("Commented"), "/Commented"}, {tr("Liked"), "/Liked"}, {tr("My"), QString()}}))
         tabs << qMakePair(tab.first, "User/" + RequestManager::userHashIdentifier + tab.second + "/Horn");
     tabs << qMakePair(tr("Top"), QLatin1String("HornTop"));
     for (const auto &tab : tabs)
     {
-        auto fw = new FeedWidget(tab.second, this);
+        auto fw = new FeedWidget(tab.second, _geoSource, this);
         _tabWidget->addTab(fw, tab.first);
     }
 
