@@ -18,6 +18,8 @@ public:
     explicit NotificationsDialog(QWidget *parent = 0);
     ~NotificationsDialog();
 
+    void openPostFromNotificationId(decltype(NotificationItem::id) notificationId);
+
 private slots:
     void requestNotifications();
 
@@ -25,7 +27,9 @@ private:
     Ui::NotificationsDialog *ui;
     TextItemList _feed;
 
+    void openPostFromNotificationWithIndex(int row);
     void setReadStateForListItem(bool isRead, QListWidgetItem *item);
+
 #ifdef Q_OS_MAC
     void updateMacBadge(int value);
 

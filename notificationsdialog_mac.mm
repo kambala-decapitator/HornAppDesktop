@@ -2,10 +2,45 @@
 
 #import <Foundation/Foundation.h>
 
+
+@interface UserNotificationCenterDelegate : NSObject <NSUserNotificationCenterDelegate>
++ (instancetype)sharedInstance;
+@property (nonatomic, unsafe_unretained) NotificationsDialog *dialog;
+@end
+
+@implementation UserNotificationCenterDelegate
+
++ (instancetype)sharedInstance
+{
+    static id instance;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{ instance = [self new]; });
+    return instance;
+}
+
+- (BOOL)userNotificationCenter:(NSUserNotificationCenter *__unused)center shouldPresentNotification:(NSUserNotification *__unused)notification { return YES; }
+
+- (void)userNotificationCenter:(NSUserNotificationCenter *__unused)center didActivateNotification:(NSUserNotification *)notification
+{
+    self.dialog->openPostFromNotificationId(notification.identifier.integerValue);
+}
+
+@end
+
+
+bool systemNotificationsAvailable() { return [NSUserNotificationCenter class] != nil; }
+
 void NotificationsDialog::displaySystemNotification(const QString &text, quint32 notificationId)
 {
-    if (![NSUserNotificationCenter class])
+    if (!systemNotificationsAvailable())
         return;
+
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        auto delegate = [UserNotificationCenterDelegate sharedInstance];
+        delegate.dialog = this;
+        [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:delegate];
+    });
 
     auto n = [NSUserNotification new];
     n.informativeText = text.toNSString();
@@ -15,7 +50,7 @@ void NotificationsDialog::displaySystemNotification(const QString &text, quint32
 
 void NotificationsDialog::removeSystemNotificationWithId(quint32 notificationId)
 {
-    if (![NSUserNotificationCenter class])
+    if (!systemNotificationsAvailable())
         return;
 
     auto notificationIdStr = @(notificationId).description;
@@ -31,6 +66,6 @@ void NotificationsDialog::removeSystemNotificationWithId(quint32 notificationId)
 
 void NotificationsDialog::removeSystemNotifications()
 {
-    if ([NSUserNotificationCenter class])
+    if (systemNotificationsAvailable())
         [[NSUserNotificationCenter defaultUserNotificationCenter] removeAllDeliveredNotifications];
 }

@@ -94,12 +94,8 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
     ui->listWidget->addAction(copyAction);
 
     // connections
-    connect(ui->listWidget, &QListWidget::itemDoubleClicked, [this](QListWidgetItem *item){
-        int i = ui->listWidget->row(item);
-        if (i >= _comments.size())
-            return;
-
-        CommentItem *comment = static_cast<CommentItem *>(_comments.at(i));
+    connect(ui->listWidget, &QListWidget::doubleClicked, [this](const QModelIndex &index){
+        CommentItem *comment = static_cast<CommentItem *>(_comments.at(index.row()));
         if (comment->nickname == RequestManager::instance().userNickname())
             return;
         _recipientCommentId = comment->id;

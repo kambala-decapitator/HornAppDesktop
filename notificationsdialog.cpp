@@ -22,31 +22,7 @@ NotificationsDialog::NotificationsDialog(QWidget *parent) : QDialog(parent, Qt::
     timer->start(30 * 1000);
 
     connect(ui->listWidget, &QListWidget::doubleClicked, [this](const QModelIndex &index){
-        auto notification = static_cast<NotificationItem *>(_feed.at(index.row()));
-        RequestManager::instance().requestPostWithId(notification->postId, [notification, this](FeedItem *feedItem){
-            if (!feedItem)
-            {
-                QMessageBox::critical(this, QString(), tr("Error opening post"));
-                return;
-            }
-            RequestManager::instance().requestComments(feedItem->id, [notification, feedItem, this](const TextItemList &comments) {
-                CommentsWidget *w = new CommentsWidget(feedItem, comments, true, QSet<quint32>({notification->commentId1, notification->commentId2}), parentWidget(), Qt::Window);
-                w->show();
-            });
-        });
-
-        if (!notification->isRead)
-        {
-            RequestManager::instance().markNotificationsRead({notification->id});
-
-            notification->isRead = true;
-            setReadStateForListItem(true, ui->listWidget->item(index.row()));
-
-#ifdef Q_OS_MAC
-            updateMacBadge(QtMac::badgeLabelText().toInt() - 1);
-            removeSystemNotificationWithId(notification->id);
-#endif
-        }
+        openPostFromNotificationWithIndex(index.row());
     });
 
     connect(ui->markAllReadButton, &QPushButton::clicked, [this]{
@@ -73,6 +49,18 @@ NotificationsDialog::~NotificationsDialog()
 {
     delete ui;
     qDeleteAll(_feed);
+}
+
+void NotificationsDialog::openPostFromNotificationId(decltype(NotificationItem::id) notificationId)
+{
+    for (int i = 0; i < _feed.size(); ++i)
+    {
+        if (_feed.at(i)->id == notificationId)
+        {
+            openPostFromNotificationWithIndex(i);
+            return;
+        }
+    }
 }
 
 void NotificationsDialog::requestNotifications()
@@ -126,6 +114,35 @@ void NotificationsDialog::requestNotifications()
         updateMacBadge(unread);
 #endif
     });
+}
+
+void NotificationsDialog::openPostFromNotificationWithIndex(int row)
+{
+    auto notification = static_cast<NotificationItem *>(_feed.at(row));
+    RequestManager::instance().requestPostWithId(notification->postId, [notification, this](FeedItem *feedItem){
+        if (!feedItem)
+        {
+            QMessageBox::critical(this, QString(), tr("Error opening post"));
+            return;
+        }
+        RequestManager::instance().requestComments(feedItem->id, [notification, feedItem, this](const TextItemList &comments) {
+            CommentsWidget *w = new CommentsWidget(feedItem, comments, true, QSet<quint32>({notification->commentId1, notification->commentId2}), parentWidget(), Qt::Window);
+            w->show();
+        });
+    });
+
+    if (!notification->isRead)
+    {
+        RequestManager::instance().markNotificationsRead({notification->id});
+
+        notification->isRead = true;
+        setReadStateForListItem(true, ui->listWidget->item(row));
+
+#ifdef Q_OS_MAC
+        updateMacBadge(QtMac::badgeLabelText().toInt() - 1);
+        removeSystemNotificationWithId(notification->id);
+#endif
+    }
 }
 
 void NotificationsDialog::setReadStateForListItem(bool isRead, QListWidgetItem *item)
