@@ -265,6 +265,11 @@ FeedItem *RequestManager::feedItemFromJson(const QJsonObject &jsonObj)
 
     item->comments = jsonObj["scomms"].toString().toInt();
 
+    QStringList tags;
+    for (const auto &tag : jsonObj["hashtags"].toArray())
+        tags << tag.toString();
+    item->tags = tags;
+
     auto background = jsonObj["bg"].toString();
     if (background.isEmpty())
         background = jsonObj["image"].toObject()["link"].toString();

@@ -27,6 +27,7 @@ struct FeedItem : public TextItem
     QString background;
     QGeoCoordinate coordinates;
     quint32 comments;
+    QStringList tags;
 };
 
 struct CommentItem : public TextItem

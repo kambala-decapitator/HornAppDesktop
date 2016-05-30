@@ -10,6 +10,8 @@ QVariant FeedListModel::data(const QModelIndex &index, int role) const
         return _dataSource.at(index.row())->message;
     case Qt::SizeHintRole:
         return QSize(0, 250);
+    case Qt::ToolTipRole:
+        return itemAtModelIndex(index)->tags.join(QChar(QChar::LineFeed));
     default:
         return QVariant();
     }
