@@ -252,14 +252,7 @@ QNetworkRequest RequestManager::requestFromUrlParts(const QString &urlPart, bool
     if (!urlJsonText.isEmpty())
         urlString += QLatin1String("&json=") + QString::fromUtf8(QUrl::toPercentEncoding(urlJsonText));
 
-    QNetworkRequest request;
-    request.setUrl(QUrl(urlString));
-#ifdef Q_OS_MAC
-    QString os = "Mac OS X 10.11.5";
-#else
-    QString os = "Windows 8.1 x64";
-#endif
-    request.setHeader(QNetworkRequest::UserAgentHeader, QString("%1/%2 (%3)").arg(qApp->applicationName(), qApp->applicationVersion(), os));
+    QNetworkRequest request({urlString});
     if (!get)
         request.setHeader(QNetworkRequest::ContentTypeHeader, QLatin1String("application/json; charset=utf-8"));
     return request;
