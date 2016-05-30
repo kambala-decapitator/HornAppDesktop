@@ -5,12 +5,14 @@
 
 #include "feeditem.h"
 
+class QGeoPositionInfoSource;
+
 class FeedListModel : public QAbstractListModel
 {
     Q_OBJECT
 
 public:
-    explicit FeedListModel(QObject *parent = 0) : QAbstractListModel(parent) {}
+    explicit FeedListModel(QGeoPositionInfoSource *geoSource, QObject *parent = 0) : QAbstractListModel(parent), _geoSource(geoSource) {}
     virtual ~FeedListModel() { qDeleteAll(_dataSource); }
 
     int rowCount(const QModelIndex &/*parent*/ = QModelIndex()) const { return _dataSource.size(); }
@@ -23,6 +25,7 @@ public:
 
 private:
     TextItemList _dataSource;
+    QGeoPositionInfoSource *_geoSource;
 };
 
 #endif // FEEDLISTMODEL_H

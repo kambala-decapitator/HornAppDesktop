@@ -2,16 +2,23 @@
 
 #include <QSize>
 
+#include <QGeoPositionInfoSource>
+
 QVariant FeedListModel::data(const QModelIndex &index, int role) const
 {
+    auto item = itemAtModelIndex(index);
     switch (role)
     {
     case Qt::DisplayRole:
-        return _dataSource.at(index.row())->message;
+        return item->message;
     case Qt::SizeHintRole:
         return QSize(0, 250);
     case Qt::ToolTipRole:
-        return itemAtModelIndex(index)->tags.join(QChar(QChar::LineFeed));
+    {
+        auto s = item->coordinates.isValid() ? tr("%1 km").arg(qRound(_geoSource->lastKnownPosition().coordinate().distanceTo(item->coordinates) / 10000) * 10)
+                                             : tr("somewhere");
+        return s + "\n\n" + item->tags.join(QChar(QChar::LineFeed));
+    }
     default:
         return QVariant();
     }
