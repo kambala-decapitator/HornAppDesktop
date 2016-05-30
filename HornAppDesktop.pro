@@ -42,7 +42,9 @@ FORMS += feedwidget.ui \
 
 macx {
     QT += macextras
-    OBJECTIVE_SOURCES += notificationsdialog_mac.mm
+    OBJECTIVE_SOURCES += notificationsdialog_mac.mm \
+        feedwidget_mac.mm
     QMAKE_CXXFLAGS += -fobjc-arc
-    LIBS += -framework Foundation
+    LIBS += -framework Foundation \
+        -framework AppKit
 }

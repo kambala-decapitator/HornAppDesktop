@@ -40,9 +40,11 @@ FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSo
         auto index = ui->listView->indexAt(p);
         if (index.isValid())
         {
-            auto action = new QAction(tr("Open image"), ui->listView);
-            connect(action, &QAction::triggered, [index, this]{
-                auto imageUrl = _feedModel->itemAtModelIndex(index)->background;
+            auto item = _feedModel->itemAtModelIndex(index);
+
+            auto openImageAction = new QAction(tr("Open image"), ui->listView);
+            connect(openImageAction, &QAction::triggered, [item, this]{
+                auto imageUrl = item->background;
                 FeedImageCache::getImageFromUrl(imageUrl, [imageUrl, this](QImage *image) {
                     auto imageWindow = new QLabel(this, Qt::Dialog);
                     imageWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -69,7 +71,19 @@ FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSo
                     imageWindow->addAction(copyImageAction);
                 });
             });
-            QMenu::exec(QList<QAction *>() << action, ui->listView->mapToGlobal(p));
+
+            QList<QAction *> actions = {openImageAction};
+#ifdef Q_OS_MAC
+            if (item->coordinates.isValid())
+            {
+                auto showLocationAction = new QAction(tr("Show location"), ui->listView);
+                connect(showLocationAction, &QAction::triggered, [item, this]{
+                    showLocation(item->coordinates.latitude(), item->coordinates.longitude());
+                });
+                actions << showLocationAction;
+            }
+#endif
+            QMenu::exec(actions, ui->listView->mapToGlobal(p));
         }
     });
 }

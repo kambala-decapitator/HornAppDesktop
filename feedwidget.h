@@ -31,6 +31,10 @@ private:
     QString _requestPart;
     bool _requestFeedOnFirstShow;
     QGeoPositionInfoSource *_geoSource;
+
+#ifdef Q_OS_MAC
+    void showLocation(double latitude, double longitude);
+#endif
 };
 
 #endif // WIDGET_H
