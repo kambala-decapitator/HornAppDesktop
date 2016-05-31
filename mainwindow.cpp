@@ -4,16 +4,38 @@
 #include "requestmanager.h"
 #include "notificationsdialog.h"
 
+#include <QSettings>
+
 #include <QTabWidget>
 #include <QInputDialog>
 #include <QMessageBox>
 
 #include <QGeoPositionInfoSource>
 
+static const QLatin1String MainWindowSettingsKey("MainWindow"), NotificationsDialogSettingsKey("NotificationsDialog");
+static const QLatin1String WindowPositionSettingsKey("pos"), WindowSizeSettingsKey("size");
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), _tabWidget(new QTabWidget(this)), _notificationsDlg(new NotificationsDialog(this))
 {
     ui->setupUi(this);
     static_cast<QBoxLayout *>(ui->centralwidget->layout())->insertWidget(0, _tabWidget);
+    installEventFilter(this);
+
+    QSettings settings;
+    for (auto windowData : windowsToRestoreGeomentry())
+    {
+        settings.beginGroup(windowData.first);
+
+        auto pos = settings.value(WindowPositionSettingsKey);
+        if (pos.isValid())
+            windowData.second->move(pos.toPoint());
+
+        auto size = settings.value(WindowSizeSettingsKey);
+        if (size.isValid())
+            windowData.second->resize(size.toSize());
+
+        settings.endGroup();
+    }
 
     _notificationsDlg->installEventFilter(this);
     _notificationsDlg->show();
@@ -67,6 +89,17 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
         ui->actionNotifications->setChecked(false);
         return true;
     }
+    else if (o == this && e->type() == QEvent::Close)
+    {
+        QSettings settings;
+        for (auto windowData : windowsToRestoreGeomentry())
+        {
+            settings.beginGroup(windowData.first);
+            settings.setValue(WindowPositionSettingsKey, windowData.second->pos());
+            settings.setValue(WindowSizeSettingsKey, windowData.second->size());
+            settings.endGroup();
+        }
+    }
     return QMainWindow::eventFilter(o, e);
 }
 
@@ -95,4 +128,9 @@ void MainWindow::refreshFeedWithIndex(int index)
 FeedWidget *MainWindow::feedWidgetWithIndex(int index)
 {
     return static_cast<FeedWidget *>(_tabWidget->widget(index));
+}
+
+QList<QPair<QLatin1String, QWidget *>> MainWindow::windowsToRestoreGeomentry()
+{
+    return {qMakePair(MainWindowSettingsKey, this), qMakePair(NotificationsDialogSettingsKey, _notificationsDlg)};
 }

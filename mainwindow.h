@@ -35,6 +35,7 @@ private:
 
     void refreshFeedWithIndex(int index);
     FeedWidget *feedWidgetWithIndex(int index);
+    QList<QPair<QLatin1String, QWidget *>> windowsToRestoreGeomentry();
 };
 
 #endif // MAINWINDOW_H
