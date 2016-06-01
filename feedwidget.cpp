@@ -15,7 +15,7 @@
 
 #include <QTimer>
 
-FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSource, QWidget *parent) : QWidget(parent), ui(new Ui::FeedWidget), _feedModel(new FeedListModel(geoSource, this)), _requestPart(requestPart), _requestFeedOnFirstShow(true)//, _geoSource(geoSource)
+FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSource, QWidget *parent) : QWidget(parent), ui(new Ui::FeedWidget), _feedModel(new FeedListModel(geoSource, this)), _requestPart(requestPart), _requestFeedOnFirstShow(true)
 {
     ui->setupUi(this);
 

@@ -15,9 +15,14 @@ QVariant FeedListModel::data(const QModelIndex &index, int role) const
         return QSize(0, 250);
     case Qt::ToolTipRole:
     {
-        auto s = item->coordinates.isValid() ? tr("%1 km").arg(qRound(_geoSource->lastKnownPosition().coordinate().distanceTo(item->coordinates) / 10000) * 10)
-                                             : tr("somewhere");
-        return s + "\n\n" + item->tags.join(QChar(QChar::LineFeed));
+        QString s;
+        if (_geoSource)
+        {
+            s = item->coordinates.isValid() ? tr("%1 km").arg(qRound(_geoSource->lastKnownPosition().coordinate().distanceTo(item->coordinates) / 10000) * 10)
+                                            : tr("somewhere");
+            s += "\n\n";
+        }
+        return s + item->tags.join(QChar(QChar::LineFeed));
     }
     default:
         return QVariant();
