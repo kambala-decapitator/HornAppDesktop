@@ -98,7 +98,30 @@ void FeedItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) 
 {
     auto w = qobject_cast<ImageWithLabelWidget *>(editor);
     auto item = itemAtIndex(index);
-    w->label->setText(item->message);
+
+    static const QRegularExpression whitespaceRex(QLatin1String("\\s"));
+    auto text = item->message, ahref = QString("<a_href"), linkFormat = QString(ahref + "=\"%1\">%1</a>");
+    bool replaceHtmlWhitespace = false;
+    int httpIndex = 0;
+    forever
+    {
+        if ((httpIndex = text.indexOf(QLatin1String("http"), httpIndex, Qt::CaseInsensitive)) == -1)
+            break;
+
+        int linkEnd = text.indexOf(whitespaceRex, httpIndex);
+        if (linkEnd == -1)
+            linkEnd = text.length();
+
+        int length = linkEnd - httpIndex;
+        auto link = linkFormat.arg(text.mid(httpIndex, length));
+        text.replace(httpIndex, length, link);
+        httpIndex += link.length();
+
+        replaceHtmlWhitespace = true;
+    }
+    if (replaceHtmlWhitespace)
+        text.replace(QChar::LineFeed, QLatin1String("<br>")).replace(QChar::Space, QLatin1String("&nbsp;")).replace(ahref, QLatin1String("<a href"));
+    w->label->setText(text);
 
     FeedImageCache::getImageFromUrl(item->background, [w](QImage *image){
         w->originalImage = image;
