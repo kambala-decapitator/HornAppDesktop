@@ -81,6 +81,7 @@ void NotificationsDialog::requestNotifications()
         {
             auto notification = static_cast<NotificationItem *>(item);
             auto lwItem = new QListWidgetItem(ui->listWidget);
+            lwItem->setToolTip(QString::number(notification->postId));
             setReadStateForListItem(notification->isRead, lwItem);
 
             QString text;
@@ -96,7 +97,7 @@ void NotificationsDialog::requestNotifications()
                 text = tr("post vote removed");
             else
                 text = notification->type + " - " + notification->message;
-            lwItem->setText(text + QString(" [%1]").arg(notification->postId));
+            lwItem->setText(text);
 
             if (!notification->isRead)
             {
