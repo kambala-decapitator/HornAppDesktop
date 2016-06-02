@@ -37,6 +37,7 @@ private:
     QListWidgetItem *addComment(const QString &comment, const QString &nickname = RequestManager::instance().userNickname(), qint32 reputation = 0, const QString &recipient = QString(), const QDateTime &dateTime = QDateTime::currentDateTime());
     QString appealTo(const QString &recipient) const;
     void showVoteStatusAtRow(int row, bool rewriteVote = false);
+    void requestCommentsVotes(const TextItemList &comments);
 };
 
 #endif // COMMENTSWIDGET_H

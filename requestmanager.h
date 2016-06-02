@@ -31,7 +31,7 @@ public:
     const QString &userNickname() const { return _nickname; }
 
     void requestPostsWithRequestPart(const QString &requestPart, FeedLambda callback, quint32 postIdForOlderFeed = 0);
-    void requestComments(quint32 postId, FeedLambda callback);
+    void requestComments(quint32 postId, FeedLambda callback, quint32 commentIdForOlderPosts = 0);
     void postComment(quint32 postId, const QString &comment, quint32 recipientCommentId, SuccessLambda callback);
     void createPost(const QString &message, const QStringList &tags, double latitude, double longitude, SuccessLambda callback);
     void requestNotifications(FeedLambda callback);

@@ -14,15 +14,7 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
 
     ui->messageLabel->setText(QString("%1\n%2 | %3").arg(feedItem->message).arg(feedItem->comments).arg(feedItem->reputation));
     showComments(highlightedComments);
-
-    QList<decltype(CommentItem::id)> ids;
-    for (auto comment : comments)
-        ids << comment->id;
-    RequestManager::instance().requestCommentsVotes(ids, [this](const QHash<decltype(CommentItem::id), bool> &votesHash){
-        _votesHash = votesHash;
-        for (int i = 0; i < _comments.size(); ++i)
-            showVoteStatusAtRow(i);
-    });
+    requestCommentsVotes(comments);
 
     // context menu
     auto upvoteAction = new QAction(tr("Upvote"), this), downvoteAction = new QAction(tr("Downvote"), this), deleteVoteAction = new QAction(tr("Delete vote"), this);
@@ -159,7 +151,7 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
         ui->charactersCountLabel->setText(QString::number(ui->plainTextEdit->toPlainText().size()));
     });
 
-    connect(ui->reloadButton, &QPushButton::clicked, [this]{
+    connect(ui->loadNewButton, &QPushButton::clicked, [this]{
         RequestManager::instance().requestComments(_feedItem->id, [this](const TextItemList &newComments) {
             if (!newComments.isEmpty())
             {
@@ -173,8 +165,24 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
         });
     });
 
+    connect(ui->loadOldButton, &QPushButton::clicked, [this]{
+        if (!_comments.isEmpty())
+            RequestManager::instance().requestComments(_feedItem->id, [this](const TextItemList &newComments) {
+                if (!newComments.isEmpty())
+                {
+                    _comments = newComments + _comments;
+
+                    ui->listWidget->clear();
+                    showComments();
+                    ui->listWidget->scrollToTop();
+
+                    requestCommentsVotes(newComments);
+                }
+            }, _comments.first()->id);
+    });
+
     connect(ui->sendButton, &QPushButton::clicked, [this]{
-        QString comment = ui->plainTextEdit->toPlainText(), commentToSend = comment, appealing = appealTo(_recipientNickname);
+        auto comment = ui->plainTextEdit->toPlainText(), commentToSend = comment, appealing = appealTo(_recipientNickname);
         if (!_recipientNickname.isEmpty())
         {
             if (commentToSend.startsWith(appealing))
@@ -232,7 +240,7 @@ bool CommentsWidget::eventFilter(QObject *o, QEvent *e)
             case Qt::Key_R:
                 if (ke->modifiers() & Qt::AltModifier)
                 {
-                    ui->reloadButton->click();
+                    ui->loadNewButton->click();
                     return true;
                 }
                 break;
@@ -302,4 +310,16 @@ void CommentsWidget::showVoteStatusAtRow(int row, bool rewriteVote)
         text.prepend(iter.value() == 1 ? "+" : "-");
 
     item->setText(text);
+}
+
+void CommentsWidget::requestCommentsVotes(const TextItemList &comments)
+{
+    QList<decltype(CommentItem::id)> ids;
+    for (auto comment : comments)
+        ids << comment->id;
+    RequestManager::instance().requestCommentsVotes(ids, [this](const QHash<decltype(CommentItem::id), bool> &votesHash){
+        _votesHash.unite(votesHash);
+        for (int i = 0; i < _comments.size(); ++i)
+            showVoteStatusAtRow(i);
+    });
 }

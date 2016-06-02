@@ -18,7 +18,7 @@
 
 static const QLatin1String kHornAppBaseUrl("http://app.hornapp.com/request/v1/");
 static const QLatin1String kToken("1dea204df061332e3703f385f3203327839765260fac58f94202149fa3c6aefc");
-static const int kPostsPerPage = 50;
+static const int kPostsPerPage = 50, kCommentsPerPage = 100;
 
 QString RequestManager::userHashIdentifier("525c87a74549fa59bd41829815f024c21cc352fe6ba85aa047a3e1c73f53cf2f");
 
@@ -67,11 +67,19 @@ void RequestManager::requestPostsWithRequestPart(const QString &requestPart, Fee
     });
 }
 
-void RequestManager::requestComments(quint32 postId, FeedLambda callback)
+void RequestManager::requestComments(quint32 postId, FeedLambda callback, quint32 commentIdForOlderPosts)
 {
     _qnam->post(requestFromUrlParts(QLatin1String("Horn/Entry/"), false), QString("{\"horn_id\": %1}").arg(postId).toLatin1());
 
-    auto reply = _qnam->get(requestFromUrlParts(QString("Horn/%1/Comment/").arg(postId)));
+    QString json;
+    if (commentIdForOlderPosts)
+    {
+        QJsonObject obj({{"limit", kCommentsPerPage}});
+        obj["conditions"] = QJsonObject({{ "5", QJsonObject({{"id", QString::number(commentIdForOlderPosts)}}) }});
+        json = dataFromJsonObj(obj);
+    }
+
+    auto reply = _qnam->get(requestFromUrlParts(QString("Horn/%1/Comment/").arg(postId), true, json));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
         if (reply->error() == QNetworkReply::NoError)
         {
