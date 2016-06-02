@@ -242,6 +242,7 @@ void CommentsWidget::showComments(const QSet<quint32> &highlightedComments)
     {
         CommentItem *comment = static_cast<CommentItem *>(_comments.at(i));
         auto lwItem = addComment(comment->message, comment->nickname, comment->reputation, comment->recipientNickname, QDateTime::fromTime_t(comment->timestamp));
+        lwItem->setToolTip(QString::number(comment->id));
         showVoteStatusAtRow(i);
 
         if (highlightedComments.contains(comment->id))
