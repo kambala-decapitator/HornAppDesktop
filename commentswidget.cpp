@@ -2,6 +2,9 @@
 #include "ui_commentswidget.h"
 
 #include <QMenu>
+#include <QMessageBox>
+
+static const int MaxCommentLength = 500;
 
 CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments, bool deleteItem, const QSet<quint32> &highlightedComments, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f),
     ui(new Ui::CommentsWidget), _comments(comments), _recipientCommentId(0), _feedItem(feedItem), _deleteItem(deleteItem)
@@ -178,6 +181,11 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
                 commentToSend.remove(appealing);
             else
                 _recipientCommentId = 0;
+        }
+        if (commentToSend.length() > MaxCommentLength)
+        {
+            QMessageBox::critical(this, QString(), tr("Comment can't be longer than %1 characters.\nPlease split it into multiple.").arg(MaxCommentLength));
+            return;
         }
 
         if (!commentToSend.isEmpty())
