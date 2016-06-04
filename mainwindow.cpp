@@ -87,13 +87,21 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
     }
     else if (o == this && e->type() == QEvent::Close)
     {
-        QSettings settings;
-        for (auto windowData : windowsToRestoreGeomentry())
+        // the guard fixes OS X double call issue from Qt 5.5+
+        static bool b;
+        if (!b)
         {
-            settings.beginGroup(windowData.first);
-            settings.setValue(WindowPositionSettingsKey, windowData.second->pos());
-            settings.setValue(WindowSizeSettingsKey, windowData.second->size());
-            settings.endGroup();
+            b = true;
+
+            QSettings settings;
+            for (auto windowData : windowsToRestoreGeomentry())
+            {
+                settings.beginGroup(windowData.first);
+                settings.setValue(WindowPositionSettingsKey, windowData.second->pos());
+                settings.setValue(WindowSizeSettingsKey, windowData.second->size());
+                settings.endGroup();
+            }
+            return true;
         }
     }
     return QMainWindow::eventFilter(o, e);
