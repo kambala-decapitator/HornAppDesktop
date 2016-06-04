@@ -2,6 +2,7 @@
 #define WIDGET_H
 
 #include <QWidget>
+#include "feeditem.h"
 
 namespace Ui {
 class FeedWidget;
@@ -19,11 +20,13 @@ public:
     ~FeedWidget();
 
     void requestFeed();
-    void loadNextPosts();
 
 protected:
     bool eventFilter(QObject *o, QEvent *e);
     void showEvent(QShowEvent *);
+
+private slots:
+    void loadNextPosts();
 
 private:
     Ui::FeedWidget *ui;
@@ -31,6 +34,7 @@ private:
     QString _requestPart;
     bool _requestFeedOnFirstShow;
 
+    void requestFeed(decltype(FeedItem::id) postIdForOlderFeed, std::function<int(const TextItemList &)> processFeedCallback, std::function<void(void)> afterDisplayingFeedCallback = []{});
 #ifdef Q_OS_MAC
     void showLocation(double latitude, double longitude);
 #endif

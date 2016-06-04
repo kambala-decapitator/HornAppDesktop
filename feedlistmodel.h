@@ -15,13 +15,13 @@ public:
     explicit FeedListModel(QGeoPositionInfoSource *geoSource, QObject *parent = 0) : QAbstractListModel(parent), _geoSource(geoSource) {}
     virtual ~FeedListModel() { qDeleteAll(_dataSource); }
 
-    int rowCount(const QModelIndex &/*parent*/ = QModelIndex()) const { return _dataSource.size(); }
+    int rowCount(const QModelIndex &/*parent*/ = QModelIndex()) const { return _dataSource.isEmpty() ? 0 : (1 + _dataSource.size()); }
     QVariant data(const QModelIndex &index, int role) const;
 
     void setDataSource(const TextItemList &feed);
     void appendItems(const TextItemList &feed);
 
-    FeedItem *itemAtModelIndex(const QModelIndex &index) const { return static_cast<FeedItem *>(_dataSource.at(index.row())); }
+    FeedItem *itemAtModelIndex(const QModelIndex &index) const;
 
 private:
     TextItemList _dataSource;

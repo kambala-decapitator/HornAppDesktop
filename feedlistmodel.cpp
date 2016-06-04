@@ -7,12 +7,11 @@
 QVariant FeedListModel::data(const QModelIndex &index, int role) const
 {
     auto item = itemAtModelIndex(index);
+    if (!item)
+        return QVariant();
+
     switch (role)
     {
-    case Qt::DisplayRole:
-        return item->message;
-    case Qt::SizeHintRole:
-        return QSize(0, 250);
     case Qt::ToolTipRole:
     {
         QString s;
@@ -44,4 +43,9 @@ void FeedListModel::appendItems(const TextItemList &feed)
     beginInsertRows(QModelIndex(), _dataSource.size(), _dataSource.size() + feed.size() - 1);
     _dataSource.append(feed);
     endInsertRows();
+}
+
+FeedItem *FeedListModel::itemAtModelIndex(const QModelIndex &index) const
+{
+    return index.row() < _dataSource.size() ? static_cast<FeedItem *>(_dataSource.at(index.row())) : 0;
 }

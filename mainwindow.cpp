@@ -71,10 +71,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->actionNotifications, &QAction::triggered, [this](bool checked){
         _notificationsDlg->setVisible(checked);
     });
-
-    connect(ui->loadNextPostsButton, &QPushButton::clicked, [this]{
-        feedWidgetWithIndex(_tabWidget->currentIndex())->loadNextPosts();
-    });
 }
 
 MainWindow::~MainWindow()

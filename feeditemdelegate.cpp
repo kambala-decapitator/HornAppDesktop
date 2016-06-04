@@ -64,15 +64,23 @@ private:
 #include "feeditemdelegate.moc"
 
 
+QSize FeedItemDelegate::sizeHint(const QStyleOptionViewItem &/*option*/, const QModelIndex &index) const
+{
+    return QSize(0, itemAtIndex(index) ? 250 : 50);
+}
+
 void FeedItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
+    auto item = itemAtIndex(index);
+    if (!item)
+        return;
+
     QPaintDevice *paintDeviceOriginal = painter->device();
 
     auto r = option.rect.adjusted(0, 0, 25, 60);
     FeedItemWidget w;
     w.setGeometry(r);
 
-    auto item = itemAtIndex(index);
     w.ui->dateTimeEdit->setDateTime(QDateTime::fromTime_t(item->timestamp));
     w.ui->reputationLcd->display(item->reputation);
     w.ui->commentsLcd->display(static_cast<int>(item->comments));
@@ -82,21 +90,26 @@ void FeedItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &opti
     painter->begin(paintDeviceOriginal);
 }
 
-QWidget *FeedItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &/*option*/, const QModelIndex &/*index*/) const
+QWidget *FeedItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &/*option*/, const QModelIndex &index) const
 {
+    if (!itemAtIndex(index))
+        return 0;
+
     auto w = new ImageWithLabelWidget(parent);
     w->label->installEventFilter(parent->parent()); // listview
     return w;
 }
 
-void FeedItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &/*index*/) const
+void FeedItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    editor->setGeometry(option.rect.adjusted(0, 0, 0, -30));
+    auto r = option.rect;
+    if (itemAtIndex(index))
+        r.adjust(0, 0, 0, -30);
+    editor->setGeometry(r);
 }
 
 void FeedItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
-    auto w = qobject_cast<ImageWithLabelWidget *>(editor);
     auto item = itemAtIndex(index);
 
     static const QRegularExpression whitespaceRex(QLatin1String("\\s"));
@@ -121,6 +134,8 @@ void FeedItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) 
     }
     if (replaceHtmlWhitespace)
         text.replace(QChar::LineFeed, QLatin1String("<br>")).replace(QChar::Space, QLatin1String("&nbsp;")).replace(ahref, QLatin1String("<a href"));
+
+    auto w = qobject_cast<ImageWithLabelWidget *>(editor);
     w->label->setText(text);
 
     FeedImageCache::getImageFromUrl(item->background, [w](QImage *image){

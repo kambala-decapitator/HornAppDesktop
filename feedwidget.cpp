@@ -12,6 +12,7 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QClipboard>
+#include <QPushButton>
 
 #include <QTimer>
 
@@ -25,16 +26,19 @@ FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSo
 
     connect(ui->listView, &QListView::doubleClicked, [this](const QModelIndex &index) {
         auto item = _feedModel->itemAtModelIndex(index);
-        RequestManager::instance().requestComments(item->id, [item, this](const TextItemList &comments) {
-            auto w = new CommentsWidget(item, comments, false, QSet<quint32>(), this, Qt::Window);
-            w->show();
-        });
+        if (item)
+            RequestManager::instance().requestComments(item->id, [item, this](const TextItemList &comments) {
+                auto w = new CommentsWidget(item, comments, false, QSet<quint32>(), this, Qt::Window);
+                w->show();
+            });
     });
     connect(ui->listView, &QListView::customContextMenuRequested, [this](const QPoint &p) {
         auto index = ui->listView->indexAt(p);
         if (index.isValid())
         {
             auto item = _feedModel->itemAtModelIndex(index);
+            if (!item)
+                return;
 
             auto openImageAction = new QAction(tr("Open image"), ui->listView);
             connect(openImageAction, &QAction::triggered, [item, this]{
@@ -89,40 +93,10 @@ FeedWidget::~FeedWidget()
 
 void FeedWidget::requestFeed()
 {
-    auto progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, this, Qt::CustomizeWindowHint);
-    progress->setWindowModality(Qt::WindowModal);
-    progress->show();
-
-    RequestManager::instance().requestPostsWithRequestPart(_requestPart, [progress, this](const TextItemList &feed) {
+    requestFeed(0, [this](const TextItemList &feed){
         _feedModel->setDataSource(feed);
-        progress->deleteLater();
-
-        for (int i = 0; i < feed.size(); ++i)
-        {
-            qApp->processEvents();
-            ui->listView->openPersistentEditor(_feedModel->index(i));
-        }
-        ui->listView->scrollToTop();
-    });
-}
-
-void FeedWidget::loadNextPosts()
-{
-    auto progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, this, Qt::CustomizeWindowHint);
-    progress->setWindowModality(Qt::WindowModal);
-    progress->show();
-
-    RequestManager::instance().requestPostsWithRequestPart(_requestPart, [progress, this](const TextItemList &feed) {
-        int oldSize = _feedModel->rowCount();
-        _feedModel->appendItems(feed);
-        progress->deleteLater();
-
-        for (int i = oldSize; i < _feedModel->rowCount(); ++i)
-        {
-            qApp->processEvents();
-            ui->listView->openPersistentEditor(_feedModel->index(i));
-        }
-    }, _feedModel->itemAtModelIndex(_feedModel->index(_feedModel->rowCount() - 1))->id);
+        return 0;
+    }, [this]{ ui->listView->scrollToTop(); });
 }
 
 bool FeedWidget::eventFilter(QObject *o, QEvent *e)
@@ -141,4 +115,38 @@ void FeedWidget::showEvent(QShowEvent *)
         _requestFeedOnFirstShow = false;
         requestFeed();
     }
+}
+
+void FeedWidget::loadNextPosts()
+{
+    requestFeed(_feedModel->itemAtModelIndex(_feedModel->index(_feedModel->rowCount() - 2))->id, [this](const TextItemList &feed){
+        int oldSize = _feedModel->rowCount() - 1;
+        _feedModel->appendItems(feed);
+        return oldSize;
+    });
+}
+
+void FeedWidget::requestFeed(quint32 postIdForOlderFeed, std::function<int(const TextItemList &)> processFeedCallback, std::function<void(void)> afterDisplayingFeedCallback)
+{
+    auto progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, this, Qt::CustomizeWindowHint);
+    progress->setWindowModality(Qt::WindowModal);
+    progress->show();
+
+    RequestManager::instance().requestPostsWithRequestPart(_requestPart, [processFeedCallback, afterDisplayingFeedCallback, progress, this](const TextItemList &feed) {
+        progress->deleteLater();
+        if (feed.isEmpty())
+            return;
+        int startIndex = processFeedCallback(feed);
+
+        auto loadNextPostsButton = new QPushButton(tr("Load Next"), this);
+        connect(loadNextPostsButton, SIGNAL(clicked()), SLOT(loadNextPosts()));
+        ui->listView->setIndexWidget(_feedModel->index(_feedModel->rowCount() - 1), loadNextPostsButton);
+
+        for (int i = startIndex; i < _feedModel->rowCount(); ++i)
+        {
+            qApp->processEvents();
+            ui->listView->openPersistentEditor(_feedModel->index(i));
+        }
+        afterDisplayingFeedCallback();
+    }, postIdForOlderFeed);
 }

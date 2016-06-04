@@ -12,6 +12,7 @@ class FeedItemDelegate : public QStyledItemDelegate
 public:
     explicit FeedItemDelegate(QObject *parent = 0) : QStyledItemDelegate(parent) {}
 
+    virtual QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
     virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
     virtual QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;

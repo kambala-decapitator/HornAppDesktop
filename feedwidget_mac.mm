@@ -4,6 +4,7 @@
 
 void FeedWidget::showLocation(double latitude, double longitude)
 {
-    auto params = [NSString stringWithFormat:@"t=m&z=13&q=%%F0%%9F%%92%%A9&ll=%lf,%lf", latitude, longitude];
+    static auto const pinTitleEncoded = @"%F0%9F%92%A9";
+    auto params = [NSString stringWithFormat:@"t=m&z=13&q=%@&ll=%lf,%lf", pinTitleEncoded, latitude, longitude];
     [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:[@"http://maps.apple.com/?" stringByAppendingString:params]]];
 }
