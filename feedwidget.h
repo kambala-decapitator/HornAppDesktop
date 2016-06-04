@@ -19,6 +19,7 @@ public:
     explicit FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSource, QWidget *parent = 0);
     ~FeedWidget();
 
+public slots:
     void requestFeed();
 
 protected:

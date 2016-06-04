@@ -113,7 +113,7 @@ void FeedWidget::showEvent(QShowEvent *)
     if (_requestFeedOnFirstShow)
     {
         _requestFeedOnFirstShow = false;
-        requestFeed();
+        QTimer::singleShot(0, this, SLOT(requestFeed()));
     }
 }
 
