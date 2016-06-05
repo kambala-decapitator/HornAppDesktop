@@ -235,6 +235,21 @@ void RequestManager::requestUserInfo()
     });
 }
 
+void RequestManager::requestCategories()
+{
+    auto reply = _qnam->get(requestFromUrlParts(QLatin1String("DictCategory/"), true, QLatin1String("{\"conditions\":{\"0\":{\"lang\":\"ru\"}}}")));
+    connect(reply, &QNetworkReply::finished, [reply, this]{
+        if (reply->error() == QNetworkReply::NoError)
+        {
+            for (const auto &value : arrayFromReply(reply))
+            {
+                auto dic = value.toObject();
+                _categoriesMap.insert(dic["id"].toString(), dic["descr"].toString());
+            }
+        }
+    });
+}
+
 void RequestManager::requestGeoInfo()
 {
     auto reply = _qnam->get(requestFromUrlParts(QLatin1String("IpGeo/1")));
@@ -283,7 +298,7 @@ FeedItem *RequestManager::feedItemFromJson(const QJsonObject &jsonObj)
 
     QStringList tags;
     for (const auto &tag : jsonObj["hashtags"].toArray())
-        tags << tag.toString();
+        tags << categoryNameFromId(tag.toString());
     item->tags = tags;
 
     auto background = jsonObj["bg"].toString();

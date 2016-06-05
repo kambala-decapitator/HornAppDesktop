@@ -30,6 +30,9 @@ public:
 
     const QString &userNickname() const { return _nickname; }
 
+    QList<QString> categories() const { return _categoriesMap.values(); }
+    QString categoryNameFromId(const QString &categoryId) { return _categoriesMap.value(categoryId, categoryId); }
+
     void requestPostsWithRequestPart(const QString &requestPart, FeedLambda callback, quint32 postIdForOlderFeed = 0);
     void requestComments(quint32 postId, FeedLambda callback, quint32 commentIdForOlderPosts = 0);
     void postComment(quint32 postId, const QString &comment, quint32 recipientCommentId, SuccessLambda callback);
@@ -48,6 +51,7 @@ private slots:
     {
         requestAuth();
         requestUserInfo();
+        requestCategories();
 //        requestGeoInfo();
     }
 
@@ -57,12 +61,14 @@ private:
 
     void requestAuth();
     void requestUserInfo();
+    void requestCategories();
     void requestGeoInfo();
 
     void patchRequest(const QString &urlPart, const QByteArray &data, SuccessLambda callback = [](bool){});
     QNetworkRequest requestFromUrlParts(const QString &urlPart, bool get = true, const QString &urlJsonText = QString());
 
-    static FeedItem *feedItemFromJson(const QJsonObject &jsonObj);
+    FeedItem *feedItemFromJson(const QJsonObject &jsonObj);
+
     static QJsonArray arrayFromReply(QNetworkReply *reply);
     static QByteArray dataFromJsonObj(const QJsonObject &jsonObj);
     static QString arrayRequestParam(const QList<quint32> &ids);
@@ -70,6 +76,7 @@ private:
 private:
     QNetworkAccessManager *_qnam;
     QString _nickname;
+    QMap<QString, QString> _categoriesMap;
 };
 
 #endif // REQUESTMANAGER_H
