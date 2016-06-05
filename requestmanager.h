@@ -14,6 +14,7 @@ typedef std::function<void(bool)> SuccessLambda;
 
 class QNetworkAccessManager;
 class QNetworkReply;
+class QIODevice;
 
 class RequestManager : public QObject
 {
@@ -28,7 +29,8 @@ public:
         return obj;
     }
 
-    const QString &userNickname() const { return _nickname; }
+    QString nickname;
+    int maxCategories;
 
     QList<QString> categories() const { return _categoriesMap.values(); }
     QString categoryNameFromId(const QString &categoryId) { return _categoriesMap.value(categoryId, categoryId); }
@@ -37,7 +39,8 @@ public:
     void requestPostsWithRequestPart(const QString &requestPart, FeedLambda callback, quint32 postIdForOlderFeed = 0);
     void requestComments(quint32 postId, FeedLambda callback, quint32 commentIdForOlderPosts = 0);
     void postComment(quint32 postId, const QString &comment, quint32 recipientCommentId, SuccessLambda callback);
-    void createPost(const QString &message, const QStringList &tags, double latitude, double longitude, SuccessLambda callback);
+    void createPost(const QString &message, const QStringList &tags, double latitude, double longitude, quint32 imageId, SuccessLambda callback);
+    void uploadImage(QIODevice *device, std::function<void(const QJsonObject &)> callback);
     void requestNotifications(FeedLambda callback);
     void requestPostWithId(quint32 postId, std::function<void(FeedItem *)> callback);
     void markNotificationsRead(const QList<quint32> &ids);
@@ -76,7 +79,6 @@ private:
 
 private:
     QNetworkAccessManager *_qnam;
-    QString _nickname;
     QMap<QString, QString> _categoriesMap;
 };
 

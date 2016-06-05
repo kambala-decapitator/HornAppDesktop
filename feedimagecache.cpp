@@ -10,6 +10,8 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
+#define WRITABLE_CACHE_PATH QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
+
 QCache<QString, QImage> FeedImageCache::_imageCache;
 QNetworkAccessManager   *FeedImageCache::_qnam;
 
@@ -50,9 +52,8 @@ void FeedImageCache::getImageFromUrl(const QString &urlString, std::function<voi
             successCallback(image);
             _imageCache.insert(urlString, image);
 
-            auto cachePath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-            QDir().mkpath(cachePath);
-            image->save(cachePath + "/" + QFileInfo(urlString).fileName());
+            QDir().mkpath(WRITABLE_CACHE_PATH);
+            image->save(savePathForUrl(urlString));
         }
     });
 }
@@ -60,7 +61,17 @@ void FeedImageCache::getImageFromUrl(const QString &urlString, std::function<voi
 void FeedImageCache::cleanCache()
 {
     QDateTime yesterday(QDate::currentDate().addDays(-1), QTime::currentTime());
-    for (const auto &fi : QDir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation), QString(), QDir::Time, QDir::Files | QDir::NoDotAndDotDot).entryInfoList())
+    for (const auto &fi : QDir(WRITABLE_CACHE_PATH, QString(), QDir::Time, QDir::Files | QDir::NoDotAndDotDot).entryInfoList())
         if (fi.created() <= yesterday)
             QFile::remove(fi.filePath());
+}
+
+void FeedImageCache::copyFileToCache(const QString &fileName, const QString &urlString)
+{
+    QFile::copy(fileName, savePathForUrl(urlString));
+}
+
+QString FeedImageCache::savePathForUrl(const QString &urlString)
+{
+    return WRITABLE_CACHE_PATH + "/" + QFileInfo(urlString).fileName();
 }

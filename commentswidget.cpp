@@ -91,7 +91,7 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
     // connections
     connect(ui->listWidget, &QListWidget::doubleClicked, [this](const QModelIndex &index){
         CommentItem *comment = static_cast<CommentItem *>(_comments.at(index.row()));
-        if (comment->nickname == RequestManager::instance().userNickname())
+        if (comment->nickname == RequestManager::instance().nickname)
             return;
         _recipientCommentId = comment->id;
 
@@ -122,7 +122,7 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
             return;
 
         auto comment = static_cast<CommentItem *>(_comments.at(row));
-        if (comment->nickname == RequestManager::instance().userNickname())
+        if (comment->nickname == RequestManager::instance().nickname)
         {
             upvoteAction->setEnabled(false);
             downvoteAction->setEnabled(false);
@@ -287,9 +287,9 @@ QListWidgetItem *CommentsWidget::addComment(const QString &comment, const QStrin
         text += appealTo(recipient);
 
     auto item = new QListWidgetItem(text + comment, ui->listWidget);
-    if (nickname == RequestManager::instance().userNickname())
+    if (nickname == RequestManager::instance().nickname)
         item->setBackgroundColor(Qt::green);
-    else if (text.contains(RequestManager::instance().userNickname()))
+    else if (text.contains(RequestManager::instance().nickname))
         item->setBackgroundColor(Qt::cyan);
     return item;
 }

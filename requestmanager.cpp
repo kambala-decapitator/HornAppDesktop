@@ -17,7 +17,7 @@
 #include <QDebug>
 #endif
 
-static const QLatin1String kHornAppBaseUrl("http://app.hornapp.com/request/v1/");
+static const QLatin1String kHornAppBaseUrl("http://app.hornapp.com/request/v1/"), HornUploadImageBaseUrl("http://upload.img.hornapp.com/request/v1/Horn/Image/");
 static const QLatin1String kToken("1dea204df061332e3703f385f3203327839765260fac58f94202149fa3c6aefc");
 static const int kPostsPerPage = 50, kCommentsPerPage = 100, UpdateUserInfoMsec = 1000 * 60 * 30;
 
@@ -115,11 +115,10 @@ void RequestManager::postComment(quint32 postId, const QString &comment, quint32
     });
 }
 
-void RequestManager::createPost(const QString &message, const QStringList &tags, double latitude, double longitude, SuccessLambda callback)
+void RequestManager::createPost(const QString &message, const QStringList &tags, double latitude, double longitude, quint32 imageId, SuccessLambda callback)
 {
     QJsonObject dic;
     dic["message"] = message;
-    dic["bg"] = "white:sample"; // let Horn choose image
     dic["lang"] = "ru";
     dic["hashtags"] = QJsonArray::fromStringList(tags);
 
@@ -131,10 +130,26 @@ void RequestManager::createPost(const QString &message, const QStringList &tags,
         dic["geometry"] = geo;
     }
 
+    if (imageId)
+        dic["image"] = QJsonObject({{"id", QString::number(imageId)}, {"itype", "2"}});
+    else
+        dic["bg"] = "white:sample";
+
     auto reply = _qnam->post(requestFromUrlParts("Horn/", false), dataFromJsonObj(dic));
     connect(reply, &QNetworkReply::finished, [reply, callback]{
         qDebug() << reply->readAll(); // "{"Errors":{"ERROR_USER_CANT_POST":[]}}"
         callback(reply->error() == QNetworkReply::NoError);
+    });
+}
+
+void RequestManager::uploadImage(QIODevice *device, std::function<void(const QJsonObject &)> callback)
+{
+    auto request = QNetworkRequest({QString("%1?token=%2").arg(HornUploadImageBaseUrl, kToken)});
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QLatin1String("application/x-www-form-urlencoded"));
+
+    auto reply = _qnam->post(request, device);
+    connect(reply, &QNetworkReply::finished, [reply, callback]{
+        callback(reply->error() == QNetworkReply::NoError ?  QJsonDocument::fromJson(reply->readAll()).object() : QJsonObject());
     });
 }
 
@@ -229,8 +244,10 @@ void RequestManager::requestUserInfo()
             auto dic = QJsonDocument::fromJson(reply->readAll()).object();
             qDebug() << "user info:" << dic;
 
-            _nickname = dic["nickname"].toString();
-            emit nicknameChanged(_nickname);
+            maxCategories = dic["settings"].toObject()["max_hashtags"].toString().toInt();
+
+            nickname = dic["nickname"].toString();
+            emit nicknameChanged(nickname);
         }
     });
 }

@@ -1,6 +1,7 @@
 #include "newpostdialog.h"
 #include "ui_newpostdialog.h"
 #include "requestmanager.h"
+#include "feedimagecache.h"
 
 #include <QFileDialog>
 #include <QImageReader>
@@ -60,13 +61,13 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
     });
 
     connect(ui->buttonBox, &QDialogButtonBox::accepted, [this]{
-        auto message = ui->plainTextEdit->toPlainText();
+        auto message = ui->plainTextEdit->toPlainText(), imagePath = ui->imagePathLineEdit->text();
         if (message.size() > MaxPostLength)
         {
             QMessageBox::critical(this, QString(), tr("Post can't be longer than %1 characters.\nPlease write the rest in comments.").arg(MaxPostLength));
             return;
         }
-        else if (message.isEmpty() && ui->imagePathLineEdit->text().isEmpty())
+        if (message.isEmpty() && imagePath.isEmpty())
         {
             QMessageBox::critical(this, QString(), tr("Empty message is allowed only with your own image"));
             return;
@@ -84,34 +85,72 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
             QMessageBox::critical(this, QString(), tr("You must select at least one category"));
             return;
         }
-
-        double latitude, longitude;
-        if (ui->currentGeoRadioButton->isChecked())
+        if (selectedCategories.size() > RequestManager::instance().maxCategories)
         {
-            auto lastPosition = _geoSource->lastKnownPosition().coordinate();
-            latitude  = lastPosition.latitude();
-            longitude = lastPosition.longitude();
-        }
-        else if (ui->hiddenGeoRadioButton->isChecked())
-        {
-            latitude = longitude = qQNaN();
-        }
-        else if (ui->randomGeoRadioButton->isChecked())
-        {
-            latitude  = randomCoordinateForSpinbox(ui->latitudeDoubleSpinBox);
-            longitude = randomCoordinateForSpinbox(ui->longitudeDoubleSpinBox);
-        }
-        else
-        {
-            latitude  = ui->latitudeDoubleSpinBox->value();
-            longitude = ui->longitudeDoubleSpinBox->value();
+            QMessageBox::critical(this, QString(), tr("You can't select more than %1 categories").arg(RequestManager::instance().maxCategories));
+            return;
         }
 
-        RequestManager::instance().createPost(message, selectedCategories, latitude, longitude, [this](bool ok){
-            if (ok)
-                accept();
+        auto createPost = [message, selectedCategories, this](quint32 imageId = 0, std::function<void(void)> successCallback = []{}){
+            double latitude, longitude;
+            if (ui->currentGeoRadioButton->isChecked())
+            {
+                auto lastPosition = _geoSource->lastKnownPosition().coordinate();
+                latitude  = lastPosition.latitude();
+                longitude = lastPosition.longitude();
+            }
+            else if (ui->hiddenGeoRadioButton->isChecked())
+            {
+                latitude = longitude = qQNaN();
+            }
+            else if (ui->randomGeoRadioButton->isChecked())
+            {
+                latitude  = randomCoordinateForSpinbox(ui->latitudeDoubleSpinBox);
+                longitude = randomCoordinateForSpinbox(ui->longitudeDoubleSpinBox);
+            }
             else
-                QMessageBox::critical(this, QString(), tr("Error creating new post"));
+            {
+                latitude  = ui->latitudeDoubleSpinBox->value();
+                longitude = ui->longitudeDoubleSpinBox->value();
+            }
+
+            RequestManager::instance().createPost(message, selectedCategories, latitude, longitude, imageId, [successCallback, this](bool ok){
+                if (ok)
+                {
+                    successCallback();
+                    accept();
+                }
+                else
+                    QMessageBox::critical(this, QString(), tr("Error creating new post"));
+            });
+        };
+        if (imagePath.isEmpty())
+        {
+            createPost();
+            return;
+        }
+
+        auto imageReader = new QImageReader(imagePath);
+        if (!imageReader->canRead())
+        {
+            delete imageReader;
+            QMessageBox::critical(this, QString(), tr("Error reading image file"));
+            return;
+        }
+
+        RequestManager::instance().uploadImage(imageReader->device(), [createPost, imagePath, imageReader, this](const QJsonObject &json){
+            delete imageReader;
+
+            if (json.isEmpty())
+            {
+                QMessageBox::critical(this, QString(), tr("Error uploading image"));
+                return;
+            }
+
+            auto imageUrlStr = json["link"].toString();
+            createPost(json["id"].toString().toUInt(), [imagePath, imageUrlStr]{
+                FeedImageCache::copyFileToCache(imagePath, imageUrlStr);
+            });
         });
     });
 }
