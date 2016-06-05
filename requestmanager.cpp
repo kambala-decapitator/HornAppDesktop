@@ -283,19 +283,7 @@ FeedItem *RequestManager::feedItemFromJson(const QJsonObject &jsonObj)
 
     QStringList tags;
     for (const auto &tag : jsonObj["hashtags"].toArray())
-    {
-        auto tagStr = tag.toString();
-        for (int i = 0; i < tagStr.length(); ++i)
-        {
-            if (!i)
-                continue;
-
-            auto currentChar = tagStr.at(i), prevChar = tagStr.at(i - 1);
-            if (currentChar.isUpper() && prevChar.isLower())
-                tagStr.insert(i++, QChar::Space);
-        }
-        tags << tagStr;
-    }
+        tags << tag.toString();
     item->tags = tags;
 
     auto background = jsonObj["bg"].toString();
