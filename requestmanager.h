@@ -40,6 +40,17 @@ public:
     void requestCommentsVotes(const QList<quint32> &ids, std::function<void(const QHash<decltype(CommentItem::id), bool> &)> callback);
     void changeCommentVote(quint32 commentId, bool deleteVote, bool upvote, SuccessLambda callback);
 
+signals:
+    void nicknameChanged(const QString &nickname);
+
+private slots:
+    void updateUserInfo()
+    {
+        requestAuth();
+        requestUserInfo();
+//        requestGeoInfo();
+    }
+
 private:
     explicit RequestManager(QObject *parent = 0);
     RequestManager(RequestManager &) {}

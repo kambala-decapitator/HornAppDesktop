@@ -1,6 +1,7 @@
 #include "requestmanager.h"
 
 #include <QBuffer>
+#include <QTimer>
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -18,7 +19,7 @@
 
 static const QLatin1String kHornAppBaseUrl("http://app.hornapp.com/request/v1/");
 static const QLatin1String kToken("1dea204df061332e3703f385f3203327839765260fac58f94202149fa3c6aefc");
-static const int kPostsPerPage = 50, kCommentsPerPage = 100;
+static const int kPostsPerPage = 50, kCommentsPerPage = 100, UpdateUserInfoMsec = 1000 * 60 * 30;
 
 QString RequestManager::userHashIdentifier("525c87a74549fa59bd41829815f024c21cc352fe6ba85aa047a3e1c73f53cf2f");
 
@@ -32,10 +33,11 @@ RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNe
         }
         reply->deleteLater();
     });
+    updateUserInfo();
 
-    requestAuth();
-    requestUserInfo();
-    requestGeoInfo();
+    auto timer = new QTimer;
+    connect(timer, SIGNAL(timeout()), SLOT(updateUserInfo()));
+    timer->start(UpdateUserInfoMsec);
 }
 
 void RequestManager::requestPostsWithRequestPart(const QString &requestPart, FeedLambda callback, quint32 postIdForOlderFeed)
@@ -203,7 +205,7 @@ void RequestManager::changeCommentVote(quint32 commentId, bool deleteVote, bool 
     QNetworkReply *reply;
     auto urlPart = QString("Horn/Comment/%1/Vote/").arg(commentId);
     if (deleteVote)
-        reply = _qnam->deleteResource(requestFromUrlParts(urlPart + "1"));
+        reply = _qnam->deleteResource(requestFromUrlParts(urlPart + QLatin1String("1")));
     else
         reply = _qnam->post(requestFromUrlParts(urlPart, false), dataFromJsonObj({{"vote", upvote ? 1 : -1}}));
     connect(reply, &QNetworkReply::finished, [reply, callback, this]{
@@ -225,15 +227,21 @@ void RequestManager::requestUserInfo()
         if (reply->error() == QNetworkReply::NoError)
         {
             auto dic = QJsonDocument::fromJson(reply->readAll()).object();
+            qDebug() << "user info:" << dic;
+
             _nickname = dic["nickname"].toString();
-            qDebug() << _nickname << "=" << dic["rep"].toString().toInt();
+            emit nicknameChanged(_nickname);
         }
     });
 }
 
 void RequestManager::requestGeoInfo()
 {
-    _qnam->get(requestFromUrlParts(QLatin1String("IpGeo/1")));
+    auto reply = _qnam->get(requestFromUrlParts(QLatin1String("IpGeo/1")));
+    connect(reply, &QNetworkReply::finished, [reply, this]{
+        if (reply->error() == QNetworkReply::NoError)
+            qDebug() << "IpGeo:" << QJsonDocument::fromJson(reply->readAll()).object();
+    });
 }
 
 void RequestManager::patchRequest(const QString &urlPart, const QByteArray &data, SuccessLambda callback)

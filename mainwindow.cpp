@@ -66,10 +66,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->actionRefreshFeed, &QAction::triggered,   this, &MainWindow::refreshCurrentFeed);
     connect(ui->refreshFeedButton, &QPushButton::clicked, this, &MainWindow::refreshCurrentFeed);
 
+    connect(ui->actionNotifications, &QAction::triggered, _notificationsDlg, &NotificationsDialog::setVisible);
     connect(ui->actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
 
-    connect(ui->actionNotifications, &QAction::triggered, [this](bool checked){
-        _notificationsDlg->setVisible(checked);
+    connect(&RequestManager::instance(), &RequestManager::nicknameChanged, [this](const QString &nickname){
+        setWindowTitle(qApp->applicationName() + " - " + nickname);
     });
 }
 
