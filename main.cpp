@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
 #endif
 
     QtConcurrent::run(FeedImageCache::cleanCache);
+    qsrand(time(nullptr));
 
     MainWindow w;
     w.show();

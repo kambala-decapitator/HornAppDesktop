@@ -3,6 +3,7 @@
 #include "feedwidget.h"
 #include "requestmanager.h"
 #include "notificationsdialog.h"
+#include "newpostdialog.h"
 
 #include <QSettings>
 
@@ -15,7 +16,7 @@
 static const QLatin1String MainWindowSettingsKey("MainWindow"), NotificationsDialogSettingsKey("NotificationsDialog");
 static const QLatin1String WindowPositionSettingsKey("pos"), WindowSizeSettingsKey("size");
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), _tabWidget(new QTabWidget(this)), _notificationsDlg(new NotificationsDialog(this))
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), _tabWidget(new QTabWidget(this)), _notificationsDlg(new NotificationsDialog)
 {
     ui->setupUi(this);
     static_cast<QBoxLayout *>(ui->centralwidget->layout())->insertWidget(0, _tabWidget);
@@ -110,14 +111,9 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
 
 void MainWindow::createNewPost()
 {
-    auto message = QInputDialog::getText(this, tr("New Post"), tr("Enter your message:")).trimmed();
-    if (!message.isEmpty())
-        RequestManager::instance().createPost(message, QStringList({"Various"}), qQNaN(), qQNaN(), [this](bool ok){
-            if (ok)
-                refreshFeedWithIndex(0);
-            else
-                QMessageBox::critical(this, QString(), tr("Error creating new post"));
-        });
+    NewPostDialog dlg(_geoSource, this);
+    if (dlg.exec())
+        refreshFeedWithIndex(0);
 }
 
 void MainWindow::refreshCurrentFeed()

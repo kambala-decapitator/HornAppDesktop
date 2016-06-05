@@ -32,6 +32,7 @@ public:
 
     QList<QString> categories() const { return _categoriesMap.values(); }
     QString categoryNameFromId(const QString &categoryId) { return _categoriesMap.value(categoryId, categoryId); }
+    QString categoryIdFromName(const QString &categoryName) { return _categoriesMap.key(categoryName); }
 
     void requestPostsWithRequestPart(const QString &requestPart, FeedLambda callback, quint32 postIdForOlderFeed = 0);
     void requestComments(quint32 postId, FeedLambda callback, quint32 commentIdForOlderPosts = 0);

@@ -20,7 +20,8 @@ SOURCES += main.cpp \
     feeditemwidget.cpp \
     feedimagecache.cpp \
     mainwindow.cpp \
-    notificationsdialog.cpp
+    notificationsdialog.cpp \
+    newpostdialog.cpp
 
 HEADERS += feedwidget.h \
     requestmanager.h \
@@ -32,13 +33,15 @@ HEADERS += feedwidget.h \
     feedlistview.hpp \
     feedimagecache.h \
     mainwindow.h \
-    notificationsdialog.h
+    notificationsdialog.h \
+    newpostdialog.h
 
 FORMS += feedwidget.ui \
     commentswidget.ui \
     feeditemwidget.ui \
     mainwindow.ui \
-    notificationsdialog.ui
+    notificationsdialog.ui \
+    newpostdialog.ui
 
 macx {
     QT += macextras
