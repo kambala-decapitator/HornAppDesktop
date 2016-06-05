@@ -207,6 +207,8 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
                     _recipientNickname.clear();
                     // TODO: update comments counter in current widget and in parent feed
                 }
+                else
+                    QMessageBox::critical(this, QString(), tr("Error sending comment"));
             });
     });
 }
