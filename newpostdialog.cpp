@@ -8,10 +8,13 @@
 #include <QMessageBox>
 
 #include <QStandardPaths>
+#include <QSettings>
 
 #include <QGeoPositionInfoSource>
 
 #include <cmath>
+
+static const QLatin1String SettingsGroupName("NewPostDialog"), CustomLatitudeSettingsKey("customLatitude"), CustomLongitudeSettingsKey("customLongitude");
 
 static const int MaxPostLength = 200;
 QString NewPostDialog::_imagesFilter;
@@ -20,6 +23,19 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
 {
     ui->setupUi(this);
     setWindowModality(Qt::WindowModal);
+
+    QSettings settings;
+    settings.beginGroup(SettingsGroupName);
+    {
+        auto latitude = settings.value(CustomLatitudeSettingsKey);
+        if (latitude.isValid())
+            ui->latitudeDoubleSpinBox->setValue(latitude.toDouble());
+
+        auto longitude = settings.value(CustomLongitudeSettingsKey);
+        if (longitude.isValid())
+            ui->longitudeDoubleSpinBox->setValue(longitude.toDouble());
+    }
+    settings.endGroup();
 
     for (const auto &category : RequestManager::instance().categories())
     {
@@ -120,6 +136,12 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
             {
                 latitude  = ui->latitudeDoubleSpinBox->value();
                 longitude = ui->longitudeDoubleSpinBox->value();
+
+                QSettings settings;
+                settings.beginGroup(SettingsGroupName);
+                settings.setValue(CustomLatitudeSettingsKey,  latitude);
+                settings.setValue(CustomLongitudeSettingsKey, longitude);
+                settings.endGroup();
             }
 
             RequestManager::instance().createPost(message, selectedCategories, latitude, longitude, imageId, [successCallback, this](bool ok){
