@@ -34,7 +34,7 @@ private:
     QHash<decltype(CommentItem::id), bool> _votesHash;
 
     void showComments(const QSet<quint32> &highlightedComments = QSet<quint32>());
-    QListWidgetItem *addComment(const QString &comment, const QString &nickname = RequestManager::instance().nickname, qint32 reputation = 0, const QString &recipient = QString(), const QDateTime &dateTime = QDateTime::currentDateTime());
+    QListWidgetItem *addComment(const QString &comment, const QString &nickname = RequestManager::nickname, qint32 reputation = 0, const QString &recipient = QString(), const QDateTime &dateTime = QDateTime::currentDateTime());
     QString appealTo(const QString &recipient) const;
     void showVoteStatusAtRow(int row, bool rewriteVote = false);
     void requestCommentsVotes(const TextItemList &comments);

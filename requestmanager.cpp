@@ -22,6 +22,9 @@ static const QLatin1String kToken("1dea204df061332e3703f385f3203327839765260fac5
 static const int kPostsPerPage = 50, kCommentsPerPage = 100, UpdateUserInfoMsec = 1000 * 60 * 30;
 
 QString RequestManager::userHashIdentifier("525c87a74549fa59bd41829815f024c21cc352fe6ba85aa047a3e1c73f53cf2f");
+QString RequestManager::nickname;
+int RequestManager::maxCategories = 5;
+double RequestManager::ipLatitude = 0, RequestManager::ipLongitude = 0;
 
 RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNetworkAccessManager)
 {
@@ -33,6 +36,11 @@ RequestManager::RequestManager(QObject *parent) : QObject(parent), _qnam(new QNe
         }
         reply->deleteLater();
     });
+}
+
+void RequestManager::init(bool geoSourceUnavailable)
+{
+    _requestIpGeo = geoSourceUnavailable;
     updateUserInfo();
 
     auto timer = new QTimer;
@@ -272,7 +280,17 @@ void RequestManager::requestGeoInfo()
     auto reply = _qnam->get(requestFromUrlParts(QLatin1String("IpGeo/1")));
     connect(reply, &QNetworkReply::finished, [reply, this]{
         if (reply->error() == QNetworkReply::NoError)
-            qDebug() << "IpGeo:" << QJsonDocument::fromJson(reply->readAll()).object();
+        {
+            auto dic = QJsonDocument::fromJson(reply->readAll()).object();
+            qDebug() << "IpGeo:" << dic;
+
+            auto coordinates = dic["geometry"].toObject()["coordinates"].toArray();
+            if (coordinates.size() == 2)
+            {
+                ipLatitude  = coordinates.at(1).toDouble();
+                ipLongitude = coordinates.at(0).toDouble();
+            }
+        }
     });
 }
 

@@ -22,6 +22,11 @@ class RequestManager : public QObject
 
 public:
     static QString userHashIdentifier;
+    static QString nickname;
+    static int maxCategories;
+
+    static double ipLatitude, ipLongitude;
+    static bool hasIpGeo() { return ipLatitude || ipLongitude; }
 
     static RequestManager &instance()
     {
@@ -29,8 +34,7 @@ public:
         return obj;
     }
 
-    QString nickname;
-    int maxCategories;
+    void init(bool geoSourceUnavailable);
 
     QList<QString> categories() const { return _categoriesMap.values(); }
     QString categoryNameFromId(const QString &categoryId) { return _categoriesMap.value(categoryId, categoryId); }
@@ -56,7 +60,9 @@ private slots:
         requestAuth();
         requestUserInfo();
         requestCategories();
-//        requestGeoInfo();
+
+        if (_requestIpGeo)
+            requestGeoInfo();
     }
 
 private:
@@ -80,6 +86,7 @@ private:
 private:
     QNetworkAccessManager *_qnam;
     QMap<QString, QString> _categoriesMap;
+    bool _requestIpGeo = false;
 };
 
 #endif // REQUESTMANAGER_H

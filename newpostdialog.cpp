@@ -85,9 +85,9 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
             QMessageBox::critical(this, QString(), tr("You must select at least one category"));
             return;
         }
-        if (selectedCategories.size() > RequestManager::instance().maxCategories)
+        if (selectedCategories.size() > RequestManager::maxCategories)
         {
-            QMessageBox::critical(this, QString(), tr("You can't select more than %1 categories").arg(RequestManager::instance().maxCategories));
+            QMessageBox::critical(this, QString(), tr("You can't select more than %1 categories").arg(RequestManager::maxCategories));
             return;
         }
 
@@ -95,9 +95,17 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
             double latitude, longitude;
             if (ui->currentGeoRadioButton->isChecked())
             {
-                auto lastPosition = _geoSource->lastKnownPosition().coordinate();
-                latitude  = lastPosition.latitude();
-                longitude = lastPosition.longitude();
+                if (_geoSource)
+                {
+                    auto lastPosition = _geoSource->lastKnownPosition().coordinate();
+                    latitude  = lastPosition.latitude();
+                    longitude = lastPosition.longitude();
+                }
+                else
+                {
+                    latitude  = RequestManager::ipLatitude;
+                    longitude = RequestManager::ipLongitude;
+                }
             }
             else if (ui->hiddenGeoRadioButton->isChecked())
             {

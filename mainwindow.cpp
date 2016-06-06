@@ -51,8 +51,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     if ((_geoSource = QGeoPositionInfoSource::createDefaultSource(this)))
         _geoSource->startUpdates();
 
-    auto tabs = QList<QPair<QString, QString>>({{tr("New"), "HornNew"}});
-    for (const auto &tab : QList<QPair<QString, QString>>({{tr("Commented"), "/Commented"}, {tr("Liked"), "/Liked"}, {tr("My"), QString()}}))
+    connect(&RequestManager::instance(), &RequestManager::nicknameChanged, [this](const QString &nickname){
+        setWindowTitle(qApp->applicationName() + " - " + nickname);
+    });
+    RequestManager::instance().init(!_geoSource);
+
+    auto tabs = QList<QPair<QString, QString>>({{tr("New"), QLatin1String("HornNew")}});
+    for (const auto &tab : QList<QPair<QString, QString>>({{tr("Commented"), QLatin1String("/Commented")}, {tr("Liked"), QLatin1String("/Liked")}, {tr("My"), QString()}}))
         tabs << qMakePair(tab.first, "User/" + RequestManager::userHashIdentifier + tab.second + "/Horn");
     tabs << qMakePair(tr("Top"), QLatin1String("HornTop"));
     for (const auto &tab : tabs)
@@ -69,10 +74,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     connect(ui->actionNotifications, &QAction::triggered, _notificationsDlg, &NotificationsDialog::setVisible);
     connect(ui->actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
-
-    connect(&RequestManager::instance(), &RequestManager::nicknameChanged, [this](const QString &nickname){
-        setWindowTitle(qApp->applicationName() + " - " + nickname);
-    });
 }
 
 MainWindow::~MainWindow()

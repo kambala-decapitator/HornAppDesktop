@@ -1,4 +1,5 @@
 #include "feedlistmodel.h"
+#include "requestmanager.h"
 
 #include <QSize>
 
@@ -14,14 +15,20 @@ QVariant FeedListModel::data(const QModelIndex &index, int role) const
     {
     case Qt::ToolTipRole:
     {
-        QString s;
+        QGeoCoordinate coordinate;
         if (_geoSource)
+            coordinate = _geoSource->lastKnownPosition().coordinate();
+        else if (RequestManager::hasIpGeo())
+            coordinate = QGeoCoordinate(RequestManager::ipLatitude, RequestManager::ipLongitude);
+
+        QString distance;
+        if (coordinate.isValid())
         {
-            s = item->coordinates.isValid() ? tr("%1 km").arg(qRound(_geoSource->lastKnownPosition().coordinate().distanceTo(item->coordinates) / 10000) * 10)
-                                            : tr("somewhere");
-            s += "\n\n";
+            distance = item->coordinates.isValid() ? tr("%1 km").arg(qRound(coordinate.distanceTo(item->coordinates) / 10000) * 10)
+                                                   : tr("somewhere");
+            distance += "\n\n";
         }
-        return s + item->tags.join(QChar(QChar::LineFeed));
+        return distance + item->tags.join(QChar(QChar::LineFeed));
     }
     default:
         return QVariant();
