@@ -81,8 +81,19 @@ void NotificationsDialog::requestNotifications()
         {
             auto notification = static_cast<NotificationItem *>(item);
             auto lwItem = new QListWidgetItem(ui->listWidget);
-            lwItem->setToolTip(QString::number(notification->postId));
             setReadStateForListItem(notification->isRead, lwItem);
+
+            // TODO: copy-paste
+            auto dateTime = QDateTime::fromTime_t(notification->timestamp);
+            auto today = QDate::currentDate(), date = dateTime.date();
+            QLatin1String dateFormat;
+            if (!date.daysTo(today))
+                dateFormat = QLatin1String("h:mm");
+            else if (date.year() == today.year())
+                dateFormat = QLatin1String("d.M h:mm");
+            else
+                dateFormat = QLatin1String("d.M.yy h:mm");
+            lwItem->setToolTip(QString("%1\n%2").arg(dateTime.toString(dateFormat)).arg(notification->postId));
 
             QString text;
             if (notification->type == QLatin1String("NOTICE_NEW_HORN_COMMENT_REPLY") || notification->type == QLatin1String("NOTICE_NEW_HORN_COMMENT"))
