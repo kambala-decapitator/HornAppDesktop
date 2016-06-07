@@ -3,6 +3,7 @@
 
 #include <QMenu>
 #include <QMessageBox>
+#include <QClipboard>
 
 static const int MaxCommentLength = 500;
 
@@ -84,8 +85,13 @@ CommentsDialog::CommentsDialog(FeedItem *feedItem, const TextItemList &comments,
     auto copyAction = new QAction(tr("Copy"), this);
     copyAction->setShortcut(QKeySequence::Copy);
     connect(copyAction, &QAction::triggered, [this]{
-        QKeyEvent copyEvent(QEvent::KeyPress, Qt::Key_C, Qt::ControlModifier);
-        qApp->sendEvent(ui->listWidget, &copyEvent);
+        auto indexes = ui->listWidget->selectionModel()->selectedRows();
+        std::sort(indexes.begin(), indexes.end());
+
+        QStringList comments;
+        for (auto index : indexes)
+            comments << ui->listWidget->item(index.row())->text();
+        qApp->clipboard()->setText(comments.join(QChar::LineFeed));
     });
     ui->listWidget->addAction(copyAction);
 
