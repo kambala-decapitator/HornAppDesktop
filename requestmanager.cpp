@@ -225,15 +225,12 @@ void RequestManager::requestCommentsVotes(const QList<quint32> &ids, std::functi
 
 void RequestManager::changeCommentVote(quint32 commentId, bool deleteVote, bool upvote, SuccessLambda callback)
 {
-    QNetworkReply *reply;
-    auto urlPart = QString("Horn/Comment/%1/Vote/").arg(commentId);
-    if (deleteVote)
-        reply = _qnam->deleteResource(requestFromUrlParts(urlPart + QLatin1String("1")));
-    else
-        reply = _qnam->post(requestFromUrlParts(urlPart, false), dataFromJsonObj({{"vote", upvote ? 1 : -1}}));
-    connect(reply, &QNetworkReply::finished, [reply, callback, this]{
-        callback(reply->error() == QNetworkReply::NoError);
-    });
+    changeVote(QString("Horn/Comment/%1/Vote/").arg(commentId), deleteVote, upvote, callback);
+}
+
+void RequestManager::changePostVote(quint32 postId, bool deleteVote, bool upvote, SuccessLambda callback)
+{
+    changeVote(QString("Horn/%1/Vote/").arg(postId), deleteVote, upvote, callback);
 }
 
 // private
@@ -291,6 +288,18 @@ void RequestManager::requestGeoInfo()
                 ipLongitude = coordinates.at(0).toDouble();
             }
         }
+    });
+}
+
+void RequestManager::changeVote(const QString &urlPart, bool deleteVote, bool upvote, SuccessLambda callback)
+{
+    QNetworkReply *reply;
+    if (deleteVote)
+        reply = _qnam->deleteResource(requestFromUrlParts(urlPart + QLatin1String("1")));
+    else
+        reply = _qnam->post(requestFromUrlParts(urlPart, false), dataFromJsonObj({{"vote", upvote ? 1 : -1}}));
+    connect(reply, &QNetworkReply::finished, [reply, callback]{
+        callback(reply->error() == QNetworkReply::NoError);
     });
 }
 

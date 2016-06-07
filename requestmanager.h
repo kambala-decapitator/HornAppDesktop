@@ -50,6 +50,7 @@ public:
     void markNotificationsRead(const QList<quint32> &ids);
     void requestCommentsVotes(const QList<quint32> &ids, std::function<void(const QHash<decltype(CommentItem::id), bool> &)> callback);
     void changeCommentVote(quint32 commentId, bool deleteVote, bool upvote, SuccessLambda callback);
+    void changePostVote(quint32 postId, bool deleteVote, bool upvote, SuccessLambda callback);
 
 signals:
     void nicknameChanged(const QString &nickname);
@@ -73,6 +74,8 @@ private:
     void requestUserInfo();
     void requestCategories();
     void requestGeoInfo();
+
+    void changeVote(const QString &urlPart, bool deleteVote, bool upvote, SuccessLambda callback);
 
     void patchRequest(const QString &urlPart, const QByteArray &data, SuccessLambda callback = [](bool){});
     QNetworkRequest requestFromUrlParts(const QString &urlPart, bool get = true, const QString &urlJsonText = QString());
