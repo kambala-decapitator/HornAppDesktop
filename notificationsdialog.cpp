@@ -1,7 +1,7 @@
 #include "notificationsdialog.h"
 #include "ui_notificationsdialog.h"
 #include "requestmanager.h"
-#include "commentswidget.h"
+#include "commentsdialog.h"
 
 #include <QMessageBox>
 #include <QTimer>
@@ -127,7 +127,7 @@ void NotificationsDialog::openPostFromNotificationWithIndex(int row)
             return;
         }
         RequestManager::instance().requestComments(feedItem->id, [notification, feedItem, this](const TextItemList &comments) {
-            CommentsWidget *w = new CommentsWidget(feedItem, comments, true, QSet<quint32>({notification->commentId1, notification->commentId2}), parentWidget(), Qt::Window);
+            CommentsDialog *w = new CommentsDialog(feedItem, comments, true, QSet<quint32>({notification->commentId1, notification->commentId2}), parentWidget(), Qt::Window);
             w->show();
         });
     });

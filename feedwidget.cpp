@@ -3,7 +3,7 @@
 #include "requestmanager.h"
 #include "feedlistmodel.h"
 #include "feeditemdelegate.h"
-#include "commentswidget.h"
+#include "commentsdialog.h"
 #include "feedimagecache.h"
 
 #include <QLabel>
@@ -28,7 +28,7 @@ FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSo
         auto item = _feedModel->itemAtModelIndex(index);
         if (item)
             RequestManager::instance().requestComments(item->id, [item, this](const TextItemList &comments) {
-                auto w = new CommentsWidget(item, comments, false, QSet<quint32>(), this, Qt::Window);
+                auto w = new CommentsDialog(item, comments, false, QSet<quint32>(), this, Qt::Window);
                 w->show();
             });
     });

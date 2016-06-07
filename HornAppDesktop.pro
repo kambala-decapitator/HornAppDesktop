@@ -16,32 +16,32 @@ SOURCES += main.cpp \
     requestmanager.cpp \
     feedlistmodel.cpp \
     feeditemdelegate.cpp \
-    commentswidget.cpp \
     feeditemwidget.cpp \
     feedimagecache.cpp \
     mainwindow.cpp \
     notificationsdialog.cpp \
-    newpostdialog.cpp
+    newpostdialog.cpp \
+    commentsdialog.cpp
 
 HEADERS += feedwidget.h \
     requestmanager.h \
     feeditem.h \
     feedlistmodel.h \
     feeditemdelegate.h \
-    commentswidget.h \
     feeditemwidget.h \
     feedlistview.hpp \
     feedimagecache.h \
     mainwindow.h \
     notificationsdialog.h \
-    newpostdialog.h
+    newpostdialog.h \
+    commentsdialog.h
 
 FORMS += feedwidget.ui \
-    commentswidget.ui \
     feeditemwidget.ui \
     mainwindow.ui \
     notificationsdialog.ui \
-    newpostdialog.ui
+    newpostdialog.ui \
+    commentsdialog.ui
 
 macx {
     QT += macextras

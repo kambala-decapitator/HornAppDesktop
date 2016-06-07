@@ -1,15 +1,16 @@
-#include "commentswidget.h"
-#include "ui_commentswidget.h"
+#include "commentsdialog.h"
+#include "ui_commentsdialog.h"
 
 #include <QMenu>
 #include <QMessageBox>
 
 static const int MaxCommentLength = 500;
 
-CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments, bool deleteItem, const QSet<quint32> &highlightedComments, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f),
-    ui(new Ui::CommentsWidget), _comments(comments), _recipientCommentId(0), _feedItem(feedItem), _deleteItem(deleteItem)
+CommentsDialog::CommentsDialog(FeedItem *feedItem, const TextItemList &comments, bool deleteItem, const QSet<quint32> &highlightedComments, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f),
+    ui(new Ui::CommentsDialog), _comments(comments), _recipientCommentId(0), _feedItem(feedItem), _deleteItem(deleteItem)
 {
     ui->setupUi(this);
+    setAttribute(Qt::WA_DeleteOnClose, true);
     installEventFilter(this);
 
     ui->messageLabel->setText(QString("%1\n%2 | %3").arg(feedItem->message).arg(feedItem->comments).arg(feedItem->reputation));
@@ -181,39 +182,10 @@ CommentsWidget::CommentsWidget(FeedItem *feedItem, const TextItemList &comments,
             }, _comments.first()->id);
     });
 
-    connect(ui->sendButton, &QPushButton::clicked, [this]{
-        auto comment = ui->plainTextEdit->toPlainText(), commentToSend = comment, appealing = appealTo(_recipientNickname);
-        if (!_recipientNickname.isEmpty())
-        {
-            if (commentToSend.startsWith(appealing))
-                commentToSend.remove(appealing);
-            else
-                _recipientCommentId = 0;
-        }
-        if (commentToSend.length() > MaxCommentLength)
-        {
-            QMessageBox::critical(this, QString(), tr("Comment can't be longer than %1 characters.\nPlease split it into multiple.").arg(MaxCommentLength));
-            return;
-        }
-
-        if (!commentToSend.isEmpty())
-            RequestManager::instance().postComment(_feedItem->id, commentToSend, _recipientCommentId, [comment, this](bool ok){
-                if (ok)
-                {
-                    addComment(comment);
-                    ui->plainTextEdit->clear();
-
-                    _recipientCommentId = 0;
-                    _recipientNickname.clear();
-                    // TODO: update comments counter in current widget and in parent feed
-                }
-                else
-                    QMessageBox::critical(this, QString(), tr("Error sending comment"));
-            });
-    });
+    connect(ui->sendButton, SIGNAL(clicked(bool)), SLOT(sendComment()));
 }
 
-CommentsWidget::~CommentsWidget()
+CommentsDialog::~CommentsDialog()
 {
     delete ui;
     qDeleteAll(_comments);
@@ -221,40 +193,57 @@ CommentsWidget::~CommentsWidget()
         delete _feedItem;
 }
 
-bool CommentsWidget::eventFilter(QObject *o, QEvent *e)
+bool CommentsDialog::eventFilter(QObject *o, QEvent *e)
 {
     if (o == this && e->type() == QEvent::KeyPress)
     {
         QKeyEvent *ke = static_cast<QKeyEvent *>(e);
-        if (ke->key() == Qt::Key_Escape)
-        {
-            close();
-            return true;
-        }
-
         if (ke->modifiers() & Qt::ControlModifier)
         {
             switch (ke->key())
             {
             case Qt::Key_Return: case Qt::Key_Enter:
-                ui->sendButton->click();
+                sendComment();
                 return true;
-            case Qt::Key_R:
-                if (ke->modifiers() & Qt::AltModifier)
-                {
-                    ui->loadNewButton->click();
-                    return true;
-                }
-                break;
-            default:
-                break;
             }
         }
     }
-    return QWidget::eventFilter(o, e);
+    return QDialog::eventFilter(o, e);
 }
 
-void CommentsWidget::showComments(const QSet<quint32> &highlightedComments)
+void CommentsDialog::sendComment()
+{
+    auto comment = ui->plainTextEdit->toPlainText(), commentToSend = comment, appealing = appealTo(_recipientNickname);
+    if (!_recipientNickname.isEmpty())
+    {
+        if (commentToSend.startsWith(appealing))
+            commentToSend.remove(appealing);
+        else
+            _recipientCommentId = 0;
+    }
+    if (commentToSend.length() > MaxCommentLength)
+    {
+        QMessageBox::critical(this, QString(), tr("Comment can't be longer than %1 characters.\nPlease split it into multiple.").arg(MaxCommentLength));
+        return;
+    }
+
+    if (commentToSend.isEmpty())
+        return;
+    RequestManager::instance().postComment(_feedItem->id, commentToSend, _recipientCommentId, [comment, this](bool ok){
+        if (ok)
+        {
+            addComment(comment);
+            ui->plainTextEdit->clear();
+
+            _recipientCommentId = 0;
+            _recipientNickname.clear();
+        }
+        else
+            QMessageBox::critical(this, QString(), tr("Error sending comment"));
+    });
+}
+
+void CommentsDialog::showComments(const QSet<quint32> &highlightedComments)
 {
     for (int i = 0; i < _comments.size(); ++i)
     {
@@ -270,7 +259,7 @@ void CommentsWidget::showComments(const QSet<quint32> &highlightedComments)
     }
 }
 
-QListWidgetItem *CommentsWidget::addComment(const QString &comment, const QString &nickname, qint32 reputation, const QString &recipient, const QDateTime &dateTime)
+QListWidgetItem *CommentsDialog::addComment(const QString &comment, const QString &nickname, qint32 reputation, const QString &recipient, const QDateTime &dateTime)
 {
     auto today = QDate::currentDate(), date = dateTime.date();
     QLatin1String dateFormat;
@@ -293,12 +282,12 @@ QListWidgetItem *CommentsWidget::addComment(const QString &comment, const QStrin
     return item;
 }
 
-QString CommentsWidget::appealTo(const QString &recipient) const
+QString CommentsDialog::appealTo(const QString &recipient) const
 {
     return recipient + ", ";
 }
 
-void CommentsWidget::showVoteStatusAtRow(int row, bool rewriteVote)
+void CommentsDialog::showVoteStatusAtRow(int row, bool rewriteVote)
 {
     auto comment = _comments.at(row);
     auto item = ui->listWidget->item(row);
@@ -313,7 +302,7 @@ void CommentsWidget::showVoteStatusAtRow(int row, bool rewriteVote)
     item->setText(text);
 }
 
-void CommentsWidget::requestCommentsVotes(const TextItemList &comments)
+void CommentsDialog::requestCommentsVotes(const TextItemList &comments)
 {
     QList<decltype(CommentItem::id)> ids;
     for (auto comment : comments)

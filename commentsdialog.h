@@ -1,7 +1,7 @@
 #ifndef COMMENTSWIDGET_H
 #define COMMENTSWIDGET_H
 
-#include <QWidget>
+#include <QDialog>
 #include <QSet>
 #include <QDateTime>
 
@@ -9,23 +9,26 @@
 #include "requestmanager.h"
 
 namespace Ui {
-class CommentsWidget;
+class CommentsDialog;
 }
 class QListWidgetItem;
 
-class CommentsWidget : public QWidget
+class CommentsDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit CommentsWidget(FeedItem *feedItem, const TextItemList &comments, bool deleteItem, const QSet<quint32> &highlightedComments, QWidget *parent = 0, Qt::WindowFlags f = 0);
-    ~CommentsWidget();
+    explicit CommentsDialog(FeedItem *feedItem, const TextItemList &comments, bool deleteItem, const QSet<quint32> &highlightedComments, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    ~CommentsDialog();
 
 protected:
     bool eventFilter(QObject *o, QEvent *e);
 
+private slots:
+    void sendComment();
+
 private:
-    Ui::CommentsWidget *ui;
+    Ui::CommentsDialog *ui;
     TextItemList _comments;
     quint32 _recipientCommentId;
     QString _recipientNickname;
