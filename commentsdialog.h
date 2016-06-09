@@ -18,7 +18,7 @@ class CommentsDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit CommentsDialog(FeedItem *feedItem, const TextItemList &comments, bool deleteItem, const QSet<quint32> &highlightedComments, QWidget *parent = 0, Qt::WindowFlags f = 0);
+    explicit CommentsDialog(FeedItem *feedItem, const TextItemList &comments, const QSet<quint32> &highlightedComments, QWidget *parent = 0, Qt::WindowFlags f = 0);
     ~CommentsDialog();
 
 protected:
@@ -32,8 +32,7 @@ private:
     TextItemList _comments;
     quint32 _recipientCommentId;
     QString _recipientNickname;
-    FeedItem *_feedItem;
-    bool _deleteItem;
+    FeedItem _feedItem;
     QHash<decltype(CommentItem::id), bool> _votesHash;
 
     void showComments(const QSet<quint32> &highlightedComments = QSet<quint32>());

@@ -7,8 +7,8 @@
 
 static const int MaxCommentLength = 500;
 
-CommentsDialog::CommentsDialog(FeedItem *feedItem, const TextItemList &comments, bool deleteItem, const QSet<quint32> &highlightedComments, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f),
-    ui(new Ui::CommentsDialog), _comments(comments), _recipientCommentId(0), _feedItem(feedItem), _deleteItem(deleteItem)
+CommentsDialog::CommentsDialog(FeedItem *feedItem, const TextItemList &comments, const QSet<quint32> &highlightedComments, QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f),
+    ui(new Ui::CommentsDialog), _comments(comments), _recipientCommentId(0), _feedItem(*feedItem)
 {
     ui->setupUi(this);
     setAttribute(Qt::WA_DeleteOnClose, true);
@@ -159,7 +159,7 @@ CommentsDialog::CommentsDialog(FeedItem *feedItem, const TextItemList &comments,
     });
 
     connect(ui->loadNewButton, &QPushButton::clicked, [this]{
-        RequestManager::instance().requestComments(_feedItem->id, [this](const TextItemList &newComments) {
+        RequestManager::instance().requestComments(_feedItem.id, [this](const TextItemList &newComments) {
             if (!newComments.isEmpty())
             {
                 qDeleteAll(_comments);
@@ -174,7 +174,7 @@ CommentsDialog::CommentsDialog(FeedItem *feedItem, const TextItemList &comments,
 
     connect(ui->loadOldButton, &QPushButton::clicked, [this]{
         if (!_comments.isEmpty())
-            RequestManager::instance().requestComments(_feedItem->id, [this](const TextItemList &newComments) {
+            RequestManager::instance().requestComments(_feedItem.id, [this](const TextItemList &newComments) {
                 if (!newComments.isEmpty())
                 {
                     _comments = newComments + _comments;
@@ -195,8 +195,6 @@ CommentsDialog::~CommentsDialog()
 {
     delete ui;
     qDeleteAll(_comments);
-    if (_deleteItem)
-        delete _feedItem;
 }
 
 bool CommentsDialog::eventFilter(QObject *o, QEvent *e)
@@ -235,7 +233,7 @@ void CommentsDialog::sendComment()
 
     if (commentToSend.isEmpty())
         return;
-    RequestManager::instance().postComment(_feedItem->id, commentToSend, _recipientCommentId, [comment, this](bool ok){
+    RequestManager::instance().postComment(_feedItem.id, commentToSend, _recipientCommentId, [comment, this](bool ok){
         if (ok)
         {
             addComment(comment);

@@ -138,8 +138,9 @@ void NotificationsDialog::openPostFromNotificationWithIndex(int row)
             return;
         }
         RequestManager::instance().requestComments(feedItem->id, [notification, feedItem, this](const TextItemList &comments) {
-            CommentsDialog *w = new CommentsDialog(feedItem, comments, true, QSet<quint32>({notification->commentId1, notification->commentId2}), parentWidget(), Qt::Window);
+            CommentsDialog *w = new CommentsDialog(feedItem, comments, QSet<quint32>({notification->commentId1, notification->commentId2}), parentWidget(), Qt::Window);
             w->show();
+            delete feedItem;
         });
     });
 

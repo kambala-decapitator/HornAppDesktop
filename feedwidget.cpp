@@ -28,7 +28,7 @@ FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSo
         auto item = _feedModel->itemAtModelIndex(index);
         if (item)
             RequestManager::instance().requestComments(item->id, [item, this](const TextItemList &comments) {
-                auto w = new CommentsDialog(item, comments, false, QSet<quint32>(), this, Qt::Window);
+                auto w = new CommentsDialog(item, comments, QSet<quint32>(), this, Qt::Window);
                 w->show();
             });
     });
