@@ -24,6 +24,12 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
     ui->setupUi(this);
     setWindowModality(Qt::WindowModal);
 
+    if (!_geoSource && !RequestManager::ipLatitude && !RequestManager::ipLatitude)
+    {
+        ui->hiddenGeoRadioButton->setChecked(true);
+        ui->currentGeoRadioButton->setEnabled(false);
+    }
+
     QSettings settings;
     settings.beginGroup(SettingsGroupName);
     {
