@@ -233,6 +233,8 @@ void CommentsDialog::sendComment()
 
     if (commentToSend.isEmpty())
         return;
+
+    ui->sendButton->setDisabled(true);
     RequestManager::instance().postComment(_feedItem.id, commentToSend, _recipientCommentId, [comment, this](bool ok){
         if (ok)
         {
@@ -244,6 +246,7 @@ void CommentsDialog::sendComment()
         }
         else
             QMessageBox::critical(this, QString(), tr("Error sending comment"));
+        ui->sendButton->setEnabled(true);
     });
 }
 
