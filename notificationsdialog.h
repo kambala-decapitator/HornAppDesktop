@@ -18,7 +18,7 @@ public:
     explicit NotificationsDialog(QWidget *parent = 0);
     ~NotificationsDialog();
 
-    void openPostFromNotificationId(decltype(NotificationItem::id) notificationId);
+    void openPostFromNotificationId(decltype(NotificationItem::id) notificationId, bool openPost);
 
 private slots:
     void requestNotifications();
@@ -27,7 +27,7 @@ private:
     Ui::NotificationsDialog *ui;
     TextItemList _feed;
 
-    void openPostFromNotificationWithIndex(int row);
+    void openPostFromNotificationWithIndex(int row, bool openPost = true);
     void setReadStateForListItem(bool isRead, QListWidgetItem *item);
 
 #ifdef Q_OS_MAC

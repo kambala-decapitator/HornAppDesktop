@@ -51,13 +51,13 @@ NotificationsDialog::~NotificationsDialog()
     qDeleteAll(_feed);
 }
 
-void NotificationsDialog::openPostFromNotificationId(decltype(NotificationItem::id) notificationId)
+void NotificationsDialog::openPostFromNotificationId(decltype(NotificationItem::id) notificationId, bool openPost)
 {
     for (int i = 0; i < _feed.size(); ++i)
     {
         if (_feed.at(i)->id == notificationId)
         {
-            openPostFromNotificationWithIndex(i);
+            openPostFromNotificationWithIndex(i, openPost);
             return;
         }
     }
@@ -128,21 +128,24 @@ void NotificationsDialog::requestNotifications()
     });
 }
 
-void NotificationsDialog::openPostFromNotificationWithIndex(int row)
+void NotificationsDialog::openPostFromNotificationWithIndex(int row, bool openPost)
 {
     auto notification = static_cast<NotificationItem *>(_feed.at(row));
-    RequestManager::instance().requestPostWithId(notification->postId, [notification, this](FeedItem *feedItem){
-        if (!feedItem)
-        {
-            QMessageBox::critical(this, QString(), tr("Error opening post"));
-            return;
-        }
-        RequestManager::instance().requestComments(feedItem->id, [notification, feedItem, this](const TextItemList &comments) {
-            CommentsDialog *w = new CommentsDialog(feedItem, comments, QSet<quint32>({notification->commentId1, notification->commentId2}), parentWidget(), Qt::Window);
-            w->show();
-            delete feedItem;
+    if (openPost)
+    {
+        RequestManager::instance().requestPostWithId(notification->postId, [notification, this](FeedItem *feedItem){
+            if (!feedItem)
+            {
+                QMessageBox::critical(this, QString(), tr("Error opening post"));
+                return;
+            }
+            RequestManager::instance().requestComments(feedItem->id, [notification, feedItem, this](const TextItemList &comments) {
+                CommentsDialog *w = new CommentsDialog(feedItem, comments, QSet<quint32>({notification->commentId1, notification->commentId2}), parentWidget(), Qt::Window);
+                w->show();
+                delete feedItem;
+            });
         });
-    });
+    }
 
     if (!notification->isRead)
     {

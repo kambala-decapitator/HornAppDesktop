@@ -22,7 +22,7 @@
 
 - (void)userNotificationCenter:(NSUserNotificationCenter *__unused)center didActivateNotification:(NSUserNotification *)notification
 {
-    self.dialog->openPostFromNotificationId(notification.identifier.integerValue);
+    self.dialog->openPostFromNotificationId(notification.identifier.integerValue, notification.activationType != NSUserNotificationActivationTypeActionButtonClicked);
 }
 
 @end
@@ -45,6 +45,7 @@ void NotificationsDialog::displaySystemNotification(const QString &text, quint32
     auto n = [NSUserNotification new];
     n.informativeText = text.toNSString();
     n.identifier = @(notificationId).description;
+    n.actionButtonTitle = tr("Mark Read").toNSString(); // if app is not signed, then Alert style must be set in System Preferences for this to work
     [[NSUserNotificationCenter defaultUserNotificationCenter] deliverNotification:n];
 }
 
