@@ -28,9 +28,13 @@
 @end
 
 
-bool systemNotificationsAvailable() { return [NSUserNotificationCenter class] != nil; }
+bool systemNotificationsAvailable()
+{
+    static bool b = [NSUserNotificationCenter class] != nil;
+    return b;
+}
 
-void NotificationsDialog::displaySystemNotification(const QString &text, quint32 notificationId)
+void NotificationsDialog::displaySystemNotification(const QString &text, const QString &dateTimeStr, decltype(NotificationItem::postId) postId, decltype(NotificationItem::id) notificationId)
 {
     if (!systemNotificationsAvailable())
         return;
@@ -39,10 +43,11 @@ void NotificationsDialog::displaySystemNotification(const QString &text, quint32
     dispatch_once(&onceToken, ^{
         auto delegate = [UserNotificationCenterDelegate sharedInstance];
         delegate.dialog = this;
-        [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:delegate];
+        [NSUserNotificationCenter defaultUserNotificationCenter].delegate = delegate;
     });
 
     auto n = [NSUserNotification new];
+    n.subtitle = [NSString stringWithFormat:@"%@, %u", dateTimeStr.toNSString(), postId];
     n.informativeText = text.toNSString();
     n.identifier = @(notificationId).description;
     n.actionButtonTitle = tr("Mark Read").toNSString(); // if app is not signed, then Alert style must be set in System Preferences for this to work

@@ -97,7 +97,8 @@ void NotificationsDialog::requestNotifications()
                 dateFormat = QLatin1String("d.M h:mm");
             else
                 dateFormat = QLatin1String("d.M.yy h:mm");
-            lwItem->setToolTip(QString("%1\n%2").arg(dateTime.toString(dateFormat)).arg(notification->postId));
+            auto dateTimeStr = dateTime.toString(dateFormat);
+            lwItem->setToolTip(QString("%1\n%2").arg(dateTimeStr).arg(notification->postId));
 
             QString text;
             if (notification->type == QLatin1String("NOTICE_NEW_HORN_COMMENT_REPLY") || notification->type == QLatin1String("NOTICE_NEW_HORN_COMMENT"))
@@ -118,7 +119,7 @@ void NotificationsDialog::requestNotifications()
             {
                 ++unread;
 #ifdef Q_OS_MAC
-                displaySystemNotification(text, notification->id);
+                displaySystemNotification(text, dateTimeStr, notification->postId, notification->id);
 #endif
             }
         }
