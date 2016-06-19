@@ -4,11 +4,15 @@
 #include "commentsdialog.h"
 
 #include <QMessageBox>
+
+#include <QDateTime>
 #include <QTimer>
 
 #ifdef Q_OS_MAC
 #include <QtMac>
 #endif
+
+static const int RefreshSecs = 30;
 
 NotificationsDialog::NotificationsDialog(QWidget *parent) : QDialog(parent, Qt::Tool | Qt::WindowStaysOnTopHint), ui(new Ui::NotificationsDialog)
 {
@@ -19,7 +23,7 @@ NotificationsDialog::NotificationsDialog(QWidget *parent) : QDialog(parent, Qt::
 
     auto timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), SLOT(requestNotifications()));
-    timer->start(30 * 1000);
+    timer->start(RefreshSecs * 1000);
 
     connect(ui->listWidget, &QListWidget::doubleClicked, [this](const QModelIndex &index){
         openPostFromNotificationWithIndex(index.row());
@@ -132,20 +136,7 @@ void NotificationsDialog::openPostFromNotificationWithIndex(int row, bool openPo
 {
     auto notification = static_cast<NotificationItem *>(_feed.at(row));
     if (openPost)
-    {
-        RequestManager::instance().requestPostWithId(notification->postId, [notification, this](FeedItem *feedItem){
-            if (!feedItem)
-            {
-                QMessageBox::critical(this, QString(), tr("Error opening post"));
-                return;
-            }
-            RequestManager::instance().requestComments(feedItem->id, [notification, feedItem, this](const TextItemList &comments) {
-                CommentsDialog *w = new CommentsDialog(feedItem, comments, QSet<quint32>({notification->commentId1, notification->commentId2}), parentWidget(), Qt::Window);
-                w->show();
-                delete feedItem;
-            });
-        });
-    }
+        CommentsDialog::instance().showComments(notification->postId, nullptr, {notification->commentId1, notification->commentId2});
 
     if (!notification->isRead)
     {

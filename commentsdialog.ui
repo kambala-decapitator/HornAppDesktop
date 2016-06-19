@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>452</width>
-    <height>500</height>
+    <width>432</width>
+    <height>465</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,119 +15,23 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="messageLabel">
-     <property name="text">
-      <string>message</string>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>-1</number>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-     <property name="wordWrap">
+     <property name="usesScrollButtons">
       <bool>true</bool>
      </property>
-     <property name="openExternalLinks">
+     <property name="tabsClosable">
       <bool>true</bool>
      </property>
-     <property name="textInteractionFlags">
-      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QListWidget" name="listWidget">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="contextMenuPolicy">
-      <enum>Qt::ActionsContextMenu</enum>
-     </property>
-     <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
-     </property>
-     <property name="showDropIndicator" stdset="0">
-      <bool>false</bool>
-     </property>
-     <property name="alternatingRowColors">
+     <property name="movable">
       <bool>true</bool>
      </property>
-     <property name="selectionMode">
-      <enum>QAbstractItemView::ExtendedSelection</enum>
-     </property>
-     <property name="textElideMode">
-      <enum>Qt::ElideNone</enum>
-     </property>
-     <property name="wordWrap">
+     <property name="tabBarAutoHide">
       <bool>true</bool>
      </property>
     </widget>
-   </item>
-   <item>
-    <widget class="QPlainTextEdit" name="plainTextEdit">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="verticalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
-     </property>
-     <property name="sizeAdjustPolicy">
-      <enum>QAbstractScrollArea::AdjustToContents</enum>
-     </property>
-     <property name="plainText">
-      <string notr="true"/>
-     </property>
-     <property name="placeholderText">
-      <string>Enter your comment...</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="charactersCountLabel">
-       <property name="text">
-        <string>0</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-       <property name="buddy">
-        <cstring>plainTextEdit</cstring>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="sendButton">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Send</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -193,12 +97,12 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>416</x>
-     <y>475</y>
+     <x>334</x>
+     <y>425</y>
     </hint>
     <hint type="destinationlabel">
-     <x>444</x>
-     <y>475</y>
+     <x>215</x>
+     <y>232</y>
     </hint>
    </hints>
   </connection>

@@ -4,6 +4,7 @@
 #include "requestmanager.h"
 #include "notificationsdialog.h"
 #include "newpostdialog.h"
+#include "commentsdialog.h"
 
 #include <QSettings>
 
@@ -23,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     installEventFilter(this);
 
     QSettings settings;
-    for (auto windowData : windowsToRestoreGeomentry())
+    for (auto windowData : windowsToRestoreGeometry())
     {
         settings.beginGroup(windowData.first);
 
@@ -95,9 +96,10 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
         if (!b)
         {
             b = true;
+            CommentsDialog::instance().close();
 
             QSettings settings;
-            for (auto windowData : windowsToRestoreGeomentry())
+            for (auto windowData : windowsToRestoreGeometry())
             {
                 settings.beginGroup(windowData.first);
                 settings.setValue(WindowPositionSettingsKey, windowData.second->pos());
@@ -132,7 +134,7 @@ FeedWidget *MainWindow::feedWidgetWithIndex(int index)
     return static_cast<FeedWidget *>(_tabWidget->widget(index));
 }
 
-QList<QPair<QLatin1String, QWidget *>> MainWindow::windowsToRestoreGeomentry()
+QList<QPair<QLatin1String, QWidget *>> MainWindow::windowsToRestoreGeometry()
 {
     return {qMakePair(MainWindowSettingsKey, this), qMakePair(NotificationsDialogSettingsKey, _notificationsDlg)};
 }

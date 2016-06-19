@@ -21,6 +21,7 @@ SOURCES += main.cpp \
     mainwindow.cpp \
     notificationsdialog.cpp \
     newpostdialog.cpp \
+    commentswidget.cpp \
     commentsdialog.cpp
 
 HEADERS += feedwidget.h \
@@ -34,6 +35,7 @@ HEADERS += feedwidget.h \
     mainwindow.h \
     notificationsdialog.h \
     newpostdialog.h \
+    commentswidget.h \
     commentsdialog.h
 
 FORMS += feedwidget.ui \
@@ -41,6 +43,7 @@ FORMS += feedwidget.ui \
     mainwindow.ui \
     notificationsdialog.ui \
     newpostdialog.ui \
+    commentswidget.ui \
     commentsdialog.ui
 
 macx {

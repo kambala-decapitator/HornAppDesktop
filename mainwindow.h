@@ -35,7 +35,7 @@ private:
 
     void refreshFeedWithIndex(int index);
     FeedWidget *feedWidgetWithIndex(int index);
-    QList<QPair<QLatin1String, QWidget *>> windowsToRestoreGeomentry();
+    QList<QPair<QLatin1String, QWidget *>> windowsToRestoreGeometry();
 };
 
 #endif // MAINWINDOW_H
