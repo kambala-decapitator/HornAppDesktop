@@ -4,12 +4,28 @@
 #include "commentswidget.h"
 
 #include <QKeyEvent>
+#include <QSettings>
 
 CommentsDialog::CommentsDialog() : QDialog(nullptr, Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint), ui(new Ui::CommentsDialog)
 {
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     installEventFilter(this);
+
+    {
+        QSettings settings;
+        settings.beginGroup(QLatin1String("CommentsDialog"));
+
+        auto pos = settings.value(QLatin1String("pos"));
+        if (pos.isValid())
+            move(pos.toPoint());
+
+        auto size = settings.value(QLatin1String("size"));
+        if (size.isValid())
+            resize(size.toSize());
+
+        settings.endGroup();
+    }
 
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &CommentsDialog::closeTab);
     connect(ui->loadNewButton, &QPushButton::clicked, [this](bool){
@@ -22,6 +38,12 @@ CommentsDialog::CommentsDialog() : QDialog(nullptr, Qt::Dialog | Qt::CustomizeWi
 
 CommentsDialog::~CommentsDialog()
 {
+    QSettings settings;
+    settings.beginGroup(QLatin1String("CommentsDialog"));
+    settings.setValue(QLatin1String("pos"), pos());
+    settings.setValue(QLatin1String("size"), size());
+    settings.endGroup();
+
     delete ui;
 }
 
