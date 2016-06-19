@@ -5,9 +5,10 @@
 
 #include <QKeyEvent>
 
-CommentsDialog::CommentsDialog() : QDialog(), ui(new Ui::CommentsDialog)
+CommentsDialog::CommentsDialog() : QDialog(nullptr, Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint), ui(new Ui::CommentsDialog)
 {
     ui->setupUi(this);
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     installEventFilter(this);
 
     connect(ui->tabWidget, &QTabWidget::tabCloseRequested, this, &CommentsDialog::closeTab);
