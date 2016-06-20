@@ -152,7 +152,7 @@ void RequestManager::createPost(const QString &message, const QStringList &tags,
 
 void RequestManager::uploadImage(QIODevice *device, std::function<void(const QJsonObject &)> callback)
 {
-    auto request = QNetworkRequest({QString("%1?token=%2").arg(HornUploadImageBaseUrl, kToken)});
+    auto request = QNetworkRequest(QUrl(QString("%1?token=%2").arg(HornUploadImageBaseUrl, kToken)));
     request.setHeader(QNetworkRequest::ContentTypeHeader, QLatin1String("application/x-www-form-urlencoded"));
 
     auto reply = _qnam->post(request, device);
@@ -327,7 +327,7 @@ QNetworkRequest RequestManager::requestFromUrlParts(const QString &urlPart, bool
     if (!urlJsonText.isEmpty())
         urlString += QLatin1String("&json=") + QString::fromUtf8(QUrl::toPercentEncoding(urlJsonText));
 
-    QNetworkRequest request({urlString});
+    QNetworkRequest request{QUrl(urlString)};
     if (!get)
         request.setHeader(QNetworkRequest::ContentTypeHeader, QLatin1String("application/json; charset=utf-8"));
     return request;

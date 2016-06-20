@@ -68,7 +68,6 @@ private slots:
 
 private:
     explicit RequestManager(QObject *parent = 0);
-    RequestManager(RequestManager &) {}
 
     void requestAuth();
     void requestUserInfo();

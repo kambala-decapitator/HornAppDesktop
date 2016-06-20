@@ -162,7 +162,7 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
         };
         if (imagePath.isEmpty())
         {
-            createPost();
+            createPost(0, []{}); // stupid MSVC doesn't like default params in lambda
             return;
         }
 

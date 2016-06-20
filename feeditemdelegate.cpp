@@ -102,9 +102,14 @@ QWidget *FeedItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewI
 
 void FeedItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
+#ifdef Q_OS_WIN32
+    int heightAdjust = -50;
+#else
+    int heightAdjust = -30;
+#endif
     auto r = option.rect;
     if (itemAtIndex(index))
-        r.adjust(0, 0, 0, -30);
+        r.adjust(0, 0, 0, heightAdjust);
     editor->setGeometry(r);
 }
 

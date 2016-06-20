@@ -2,6 +2,8 @@
 #define WIDGET_H
 
 #include <QWidget>
+#include <functional>
+
 #include "feeditem.h"
 
 namespace Ui {

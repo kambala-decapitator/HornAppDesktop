@@ -1,6 +1,6 @@
 #include <QApplication>
-
 #include <QtConcurrent/QtConcurrentRun>
+#include <ctime>
 
 #include "mainwindow.h"
 #include "feedimagecache.h"
