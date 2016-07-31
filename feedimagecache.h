@@ -8,19 +8,20 @@
 
 class QNetworkAccessManager;
 class QImage;
+struct FeedItem;
 
 class FeedImageCache
 {
 public:
-    static void getImageFromUrl(const QString &urlString, std::function<void(QImage *)> successCallback);
+    static void getImageForItem(FeedItem *item, std::function<void(QImage *)> successCallback);
     static void cleanCache(); // remove images older than 24h
-    static void copyFileToCache(const QString &fileName, const QString &urlString);
+    static void copyFileToCache(const QString &fileName, const QString &itemIdString);
 
 private:
     static QCache<QString, QImage> _imageCache;
     static QNetworkAccessManager *_qnam;
 
-    static QString savePathForUrl(const QString &urlString);
+    static QString savePathForId(const QString &itemIdString);
 };
 
 #endif // FEEDIMAGECACHE_H

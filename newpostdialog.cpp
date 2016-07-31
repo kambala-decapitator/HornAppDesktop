@@ -183,9 +183,9 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
                 return;
             }
 
-            auto imageUrlStr = json["link"].toString();
-            createPost(json["id"].toString().toUInt(), [imagePath, imageUrlStr]{
-                FeedImageCache::copyFileToCache(imagePath, imageUrlStr);
+            auto itemIdString = json["id"].toString();
+            createPost(itemIdString.toUInt(), [imagePath, itemIdString]{
+                FeedImageCache::copyFileToCache(imagePath, itemIdString);
             });
         });
     });

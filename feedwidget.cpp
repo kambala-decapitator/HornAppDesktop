@@ -40,7 +40,7 @@ FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSo
             auto openImageAction = new QAction(tr("Open image"), ui->listView);
             connect(openImageAction, &QAction::triggered, [item, this]{
                 auto imageUrl = item->background;
-                FeedImageCache::getImageFromUrl(imageUrl, [imageUrl, this](QImage *image) {
+                FeedImageCache::getImageForItem(item, [imageUrl, this](QImage *image) {
                     auto imageWindow = new QLabel(this, Qt::Dialog);
                     imageWindow->setAttribute(Qt::WA_DeleteOnClose);
                     imageWindow->setPixmap(QPixmap::fromImage(*image));

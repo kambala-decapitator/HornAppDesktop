@@ -143,7 +143,7 @@ void FeedItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) 
     auto w = qobject_cast<ImageWithLabelWidget *>(editor);
     w->label->setText(text);
 
-    FeedImageCache::getImageFromUrl(item->background, [w](QImage *image){
+    FeedImageCache::getImageForItem(item, [w](QImage *image){
         w->originalImage = image;
         w->setResizedBackgroundImage();
     });

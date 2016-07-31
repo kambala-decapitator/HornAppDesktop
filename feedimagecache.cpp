@@ -1,4 +1,5 @@
 #include "feedimagecache.h"
+#include "feeditem.h"
 
 #include <QStandardPaths>
 #include <QFileInfo>
@@ -11,19 +12,24 @@
 #include <QNetworkReply>
 
 #define WRITABLE_CACHE_PATH QStandardPaths::writableLocation(QStandardPaths::CacheLocation)
+#define FILENAME_FOR_ID(ID) (ID + QLatin1String(".png"))
 
 QCache<QString, QImage> FeedImageCache::_imageCache;
 QNetworkAccessManager   *FeedImageCache::_qnam;
 
-void FeedImageCache::getImageFromUrl(const QString &urlString, std::function<void(QImage *)> successCallback)
+void FeedImageCache::getImageForItem(FeedItem *item, std::function<void(QImage *)> successCallback)
 {
+    if (!item)
+        return;
+    auto urlString = item->background;
     if (!urlString.startsWith("http"))
         return;
 
+    auto itemIdString = QString::number(item->id);
     auto image = _imageCache[urlString];
     if (!image)
     {
-        auto cachedImagePath = QStandardPaths::locate(QStandardPaths::CacheLocation, QFileInfo(urlString).fileName());
+        auto cachedImagePath = QStandardPaths::locate(QStandardPaths::CacheLocation, FILENAME_FOR_ID(itemIdString));
         if (!cachedImagePath.isEmpty())
         {
             QImage cachedImage(cachedImagePath);
@@ -43,7 +49,7 @@ void FeedImageCache::getImageFromUrl(const QString &urlString, std::function<voi
     if (!_qnam)
         _qnam = new QNetworkAccessManager;
     auto reply = _qnam->get(QNetworkRequest(QUrl(urlString)));
-    QObject::connect(reply, &QNetworkReply::finished, [reply, urlString, successCallback]{
+    QObject::connect(reply, &QNetworkReply::finished, [itemIdString, reply, urlString, successCallback]{
         if (reply->error() == QNetworkReply::NoError)
         {
             auto image = new QImage;
@@ -53,7 +59,7 @@ void FeedImageCache::getImageFromUrl(const QString &urlString, std::function<voi
             _imageCache.insert(urlString, image);
 
             QDir().mkpath(WRITABLE_CACHE_PATH);
-            image->save(savePathForUrl(urlString));
+            image->save(savePathForId(itemIdString));
         }
     });
 }
@@ -66,12 +72,12 @@ void FeedImageCache::cleanCache()
             QFile::remove(fi.filePath());
 }
 
-void FeedImageCache::copyFileToCache(const QString &fileName, const QString &urlString)
+void FeedImageCache::copyFileToCache(const QString &fileName, const QString &itemIdString)
 {
-    QFile::copy(fileName, savePathForUrl(urlString));
+    QFile::copy(fileName, savePathForId(itemIdString));
 }
 
-QString FeedImageCache::savePathForUrl(const QString &urlString)
+QString FeedImageCache::savePathForId(const QString &itemIdString)
 {
-    return WRITABLE_CACHE_PATH + "/" + QFileInfo(urlString).fileName();
+    return WRITABLE_CACHE_PATH + "/" + FILENAME_FOR_ID(itemIdString);
 }
