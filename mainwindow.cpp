@@ -75,6 +75,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     connect(ui->actionNotifications, &QAction::triggered, _notificationsDlg, &NotificationsDialog::setVisible);
     connect(ui->actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
+
+    connect(ui->actionOpenPost, &QAction::triggered, [this]{
+        int postId = QInputDialog::getInt(this, QString(), tr("Post ID:"), 0, 0);
+        if (postId)
+            CommentsDialog::instance().showComments(postId);
+    });
 }
 
 MainWindow::~MainWindow()

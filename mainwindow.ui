@@ -50,6 +50,7 @@
     </property>
     <addaction name="actionNewPost"/>
     <addaction name="actionRefreshFeed"/>
+    <addaction name="actionOpenPost"/>
     <addaction name="separator"/>
     <addaction name="actionNotifications"/>
    </widget>
@@ -93,6 +94,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+N</string>
+   </property>
+  </action>
+  <action name="actionOpenPost">
+   <property name="text">
+    <string>Open post...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
  </widget>
