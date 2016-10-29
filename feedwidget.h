@@ -38,7 +38,7 @@ private:
     bool _requestFeedOnFirstShow;
 
     void requestFeed(decltype(FeedItem::id) postIdForOlderFeed, std::function<int(const TextItemList &)> processFeedCallback, std::function<void(void)> afterDisplayingFeedCallback = []{});
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     void showLocation(double latitude, double longitude);
 #endif
 };

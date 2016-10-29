@@ -68,7 +68,7 @@ FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSo
             });
 
             QList<QAction *> actions = {openImageAction};
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
             if (item->coordinates.isValid())
             {
                 auto showLocationAction = new QAction(tr("Show location"), ui->listView);

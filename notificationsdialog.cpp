@@ -8,7 +8,7 @@
 #include <QDateTime>
 #include <QTimer>
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 #include <QtMac>
 #endif
 
@@ -42,7 +42,7 @@ NotificationsDialog::NotificationsDialog(QWidget *parent) : QDialog(parent, Qt::
         }
         RequestManager::instance().markNotificationsRead(unreadIds);
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         updateMacBadge(0);
         removeSystemNotifications();
 #endif
@@ -118,11 +118,11 @@ void NotificationsDialog::requestNotifications()
             if (!notification->isRead)
             {
                 ++unread;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
                 displaySystemNotification(text, dateTimeStr, notification->postId, notification->id);
 #endif
             }
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
             else
             {
                 removeSystemNotificationWithId(notification->id);
@@ -133,7 +133,7 @@ void NotificationsDialog::requestNotifications()
         if (unread && hasNew)
             qApp->alert(this);
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         updateMacBadge(unread);
 #endif
     });
@@ -152,7 +152,7 @@ void NotificationsDialog::openPostFromNotificationWithIndex(int row, bool openPo
         notification->isRead = true;
         setReadStateForListItem(true, ui->listWidget->item(row));
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         updateMacBadge(QtMac::badgeLabelText().toInt() - 1);
         removeSystemNotificationWithId(notification->id);
 #endif
@@ -164,7 +164,7 @@ void NotificationsDialog::setReadStateForListItem(bool isRead, QListWidgetItem *
     item->setTextColor(isRead ? Qt::gray : Qt::black);
 }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 void NotificationsDialog::updateMacBadge(int value)
 {
     QtMac::setBadgeLabelText(value > 0 ? QString::number(value) : QString());

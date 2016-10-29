@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     _notificationsDlg->installEventFilter(this);
     _notificationsDlg->show();
 
-#ifdef Q_OS_MACX
+#ifdef Q_OS_MACOSX
     ui->menubar->insertMenu(ui->menuHelp->menuAction(), new QMenu(tr("Edit"), ui->menubar));
 #endif
 

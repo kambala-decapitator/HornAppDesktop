@@ -30,7 +30,7 @@ private:
     void openPostFromNotificationWithIndex(int row, bool openPost = true);
     void setReadStateForListItem(bool isRead, QListWidgetItem *item);
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     void updateMacBadge(int value);
 
     void displaySystemNotification(const QString &text, const QString &dateTimeStr, decltype(NotificationItem::postId) postId, decltype(NotificationItem::id) notificationId);
