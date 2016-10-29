@@ -122,6 +122,12 @@ void NotificationsDialog::requestNotifications()
                 displaySystemNotification(text, dateTimeStr, notification->postId, notification->id);
 #endif
             }
+#ifdef Q_OS_MAC
+            else
+            {
+                removeSystemNotificationWithId(notification->id);
+            }
+#endif
         }
 
         if (unread && hasNew)
