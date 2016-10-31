@@ -19,6 +19,7 @@
 FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSource, QWidget *parent) : QWidget(parent), ui(new Ui::FeedWidget), _feedModel(new FeedListModel(geoSource, this)), _requestPart(requestPart), _requestFeedOnFirstShow(true)
 {
     ui->setupUi(this);
+    installEventFilter(this);
 
     ui->listView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->listView->setModel(_feedModel);
@@ -102,20 +103,39 @@ void FeedWidget::requestFeed()
 
 bool FeedWidget::eventFilter(QObject *o, QEvent *e)
 {
-    if (e->type() != QEvent::KeyPress || static_cast<QKeyEvent *>(e)->key() != Qt::Key_Escape)
-        return QWidget::eventFilter(o, e);
-
-    qobject_cast<QWidget *>(o)->close();
-    return true;
-}
-
-void FeedWidget::showEvent(QShowEvent *)
-{
-    if (_requestFeedOnFirstShow)
+    if (e->type() == QEvent::Show && o == this)
     {
-        _requestFeedOnFirstShow = false;
-        QTimer::singleShot(0, this, SLOT(requestFeed()));
+        if (_requestFeedOnFirstShow)
+        {
+            _requestFeedOnFirstShow = false;
+            QTimer::singleShot(0, this, SLOT(requestFeed()));
+            return true;
+        }
     }
+
+    if (e->type() == QEvent::KeyPress)
+    {
+        switch (static_cast<QKeyEvent *>(e)->key())
+        {
+        case Qt::Key_Escape:
+            if (o != this) // image window
+            {
+                qobject_cast<QWidget *>(o)->close();
+                return true;
+            }
+            break;
+        case Qt::Key_Space:
+            if (o == this)
+            {
+                // TODO: show image of the current item
+//                return true;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    return QWidget::eventFilter(o, e);
 }
 
 void FeedWidget::loadNextPosts()
