@@ -52,5 +52,6 @@ macx {
         feedwidget_mac.mm
     QMAKE_CXXFLAGS += -fobjc-arc
     LIBS += -framework Foundation \
-        -framework AppKit
+        -framework AppKit \
+        -framework Quartz
 }

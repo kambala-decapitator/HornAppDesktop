@@ -16,6 +16,7 @@ public:
     static void getImageForItem(FeedItem *item, std::function<void(QImage *)> successCallback);
     static void cleanCache(); // remove images older than 24h
     static void copyFileToCache(const QString &fileName, const QString &itemIdString);
+    static QString savePathForItem(FeedItem *item);
 
 private:
     static QCache<QString, QImage> _imageCache;

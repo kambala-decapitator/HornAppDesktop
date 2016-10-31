@@ -39,6 +39,9 @@ FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSo
 
             auto openImageAction = new QAction(tr("Open image"), ui->listView);
             connect(openImageAction, &QAction::triggered, [item, this]{
+#ifdef Q_OS_MACOS
+                quickLookImage(FeedImageCache::savePathForItem(item));
+#else
                 auto imageUrl = item->background;
                 FeedImageCache::getImageForItem(item, [imageUrl, this](QImage *image) {
                     auto imageWindow = new QLabel(this, Qt::Dialog);
@@ -65,6 +68,7 @@ FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSo
                     });
                     imageWindow->addAction(copyImageAction);
                 });
+#endif
             });
 
             QList<QAction *> actions = {openImageAction};

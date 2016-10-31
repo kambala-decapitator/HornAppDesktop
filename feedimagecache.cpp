@@ -77,6 +77,11 @@ void FeedImageCache::copyFileToCache(const QString &fileName, const QString &ite
     QFile::copy(fileName, savePathForId(itemIdString));
 }
 
+QString FeedImageCache::savePathForItem(FeedItem *item)
+{
+    return savePathForId(QString::number(item->id));
+}
+
 QString FeedImageCache::savePathForId(const QString &itemIdString)
 {
     return WRITABLE_CACHE_PATH + "/" + FILENAME_FOR_ID(itemIdString);
