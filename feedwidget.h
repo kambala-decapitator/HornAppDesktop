@@ -38,7 +38,7 @@ private:
 
     void requestFeed(decltype(FeedItem::id) postIdForOlderFeed, std::function<int(const TextItemList &)> processFeedCallback, std::function<void(void)> afterDisplayingFeedCallback = []{});
 #ifdef Q_OS_MACOS
-    void quickLookImage(const QString &imagePath);
+    void quickLookImage(const QString &imagePath, const QRect &rect);
     void showLocation(double latitude, double longitude);
 #endif
 };

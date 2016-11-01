@@ -39,9 +39,11 @@ FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSo
                 return;
 
             auto openImageAction = new QAction(tr("Open image"), ui->listView);
-            connect(openImageAction, &QAction::triggered, [item, this]{
+            connect(openImageAction, &QAction::triggered, [item, index, this]{
 #ifdef Q_OS_MACOS
-                quickLookImage(FeedImageCache::savePathForItem(item));
+                auto r = ui->listView->visualRect(index);
+                r.moveTopLeft(ui->listView->mapToGlobal(r.topLeft()));
+                quickLookImage(FeedImageCache::savePathForItem(item), r);
 #else
                 auto imageUrl = item->background;
                 FeedImageCache::getImageForItem(item, [imageUrl, this](QImage *image) {
