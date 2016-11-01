@@ -345,7 +345,11 @@ void CommentsWidget::showVoteStatusAtRow(int row, bool rewriteVote)
 
     auto iter = _votesHash.find(comment->id);
     if (iter != _votesHash.cend())
-        text.prepend(iter.value() == 1 ? "+" : "-");
+    {
+        auto sign = iter.value() == 1 ? "+" : "-";
+        if (!text.startsWith(sign))
+            text.prepend(sign);
+    }
 
     item->setText(text);
 }
