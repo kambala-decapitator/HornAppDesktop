@@ -2,6 +2,7 @@
 #define WIDGET_H
 
 #include <QWidget>
+#include <QModelIndex>
 #include <functional>
 
 #include "feeditem.h"
@@ -29,12 +30,14 @@ protected:
 
 private slots:
     void loadNextPosts();
+    void openImage();
 
 private:
     Ui::FeedWidget *ui;
     FeedListModel *_feedModel;
     QString _requestPart;
-    bool _requestFeedOnFirstShow;
+    bool _requestFeedOnFirstShow = true;
+    QModelIndex _openImageModelIndex = QModelIndex();
 
     void requestFeed(decltype(FeedItem::id) postIdForOlderFeed, std::function<int(const TextItemList &)> processFeedCallback, std::function<void(void)> afterDisplayingFeedCallback = []{});
 #ifdef Q_OS_MACOS

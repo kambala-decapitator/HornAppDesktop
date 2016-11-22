@@ -15,8 +15,9 @@
 #include <QPushButton>
 
 #include <QTimer>
+#include <QDebug>
 
-FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSource, QWidget *parent) : QWidget(parent), ui(new Ui::FeedWidget), _feedModel(new FeedListModel(geoSource, this)), _requestPart(requestPart), _requestFeedOnFirstShow(true)
+FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSource, QWidget *parent) : QWidget(parent), ui(new Ui::FeedWidget), _feedModel(new FeedListModel(geoSource, this)), _requestPart(requestPart)
 {
     ui->setupUi(this);
 
@@ -33,61 +34,29 @@ FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSo
     });
     connect(ui->listView, &QListView::customContextMenuRequested, [this](const QPoint &p) {
         auto index = ui->listView->indexAt(p);
-        if (index.isValid())
+        if (!index.isValid())
+            return;
+
+        auto item = _feedModel->itemAtModelIndex(index);
+        if (!item)
+            return;
+
+        auto openImageAction = new QAction(tr("Open image"), ui->listView);
+        connect(openImageAction, SIGNAL(triggered(bool)), SLOT(openImage()));
+        _openImageModelIndex = index;
+
+        QList<QAction *> actions = {openImageAction};
+#ifdef Q_OS_MACOS
+        if (item->coordinates.isValid())
         {
-            auto item = _feedModel->itemAtModelIndex(index);
-            if (!item)
-                return;
-
-            auto openImageAction = new QAction(tr("Open image"), ui->listView);
-            connect(openImageAction, &QAction::triggered, [item, index, this]{
-#ifdef Q_OS_MACOS
-                auto r = ui->listView->visualRect(index);
-                r.moveTopLeft(ui->listView->mapToGlobal(r.topLeft()));
-                quickLookImage(FeedImageCache::savePathForItem(item), r);
-#else
-                auto imageUrl = item->background;
-                FeedImageCache::getImageForItem(item, [imageUrl, this](QImage *image) {
-                    auto imageWindow = new QLabel(this, Qt::Dialog);
-                    imageWindow->setAttribute(Qt::WA_DeleteOnClose);
-                    imageWindow->setPixmap(QPixmap::fromImage(*image));
-                    imageWindow->setScaledContents(true);
-                    imageWindow->setContextMenuPolicy(Qt::ActionsContextMenu);
-                    imageWindow->installEventFilter(this);
-                    imageWindow->adjustSize();
-                    imageWindow->resize(imageWindow->height() * image->width() / image->height(), imageWindow->height());
-                    imageWindow->show();
-
-                    auto copyImageUrlAction = new QAction(tr("Copy URL"), imageWindow);
-                    copyImageUrlAction->setShortcut(QKeySequence::Copy);
-                    connect(copyImageUrlAction, &QAction::triggered, [imageUrl]{
-                        qApp->clipboard()->setText(imageUrl);
-                    });
-                    imageWindow->addAction(copyImageUrlAction);
-
-                    auto copyImageAction = new QAction(tr("Copy Image"), imageWindow);
-                    copyImageAction->setShortcut({"Ctrl+Shift+C"});
-                    connect(copyImageAction, &QAction::triggered, [image]{
-                        qApp->clipboard()->setImage(*image);
-                    });
-                    imageWindow->addAction(copyImageAction);
-                });
-#endif
+            auto showLocationAction = new QAction(tr("Show location"), ui->listView);
+            connect(showLocationAction, &QAction::triggered, [item, this]{
+                showLocation(item->coordinates.latitude(), item->coordinates.longitude());
             });
-
-            QList<QAction *> actions = {openImageAction};
-#ifdef Q_OS_MACOS
-            if (item->coordinates.isValid())
-            {
-                auto showLocationAction = new QAction(tr("Show location"), ui->listView);
-                connect(showLocationAction, &QAction::triggered, [item, this]{
-                    showLocation(item->coordinates.latitude(), item->coordinates.longitude());
-                });
-                actions << showLocationAction;
-            }
-#endif
-            QMenu::exec(actions, ui->listView->mapToGlobal(p));
+            actions << showLocationAction;
         }
+#endif
+        QMenu::exec(actions, ui->listView->mapToGlobal(p));
     });
 }
 
@@ -120,8 +89,10 @@ bool FeedWidget::eventFilter(QObject *o, QEvent *e)
         {
             if (key == Qt::Key_Space)
             {
-                // TODO: show image of the current item
-//                return true;
+                // TODO: handle space when anything is focused
+                _openImageModelIndex = ui->listView->indexAt(QPoint());
+                openImage();
+                return true;
             }
         }
         else if (o != this) // image window
@@ -143,6 +114,51 @@ void FeedWidget::loadNextPosts()
         _feedModel->appendItems(feed);
         return oldSize;
     });
+}
+
+void FeedWidget::openImage()
+{
+    if (!_openImageModelIndex.isValid())
+        return;
+
+    auto item = _feedModel->itemAtModelIndex(_openImageModelIndex);
+    if (!item)
+        return;
+
+#ifdef Q_OS_MACOS
+    auto r = ui->listView->visualRect(_openImageModelIndex);
+    r.moveTopLeft(ui->listView->mapToGlobal(r.topLeft()));
+    quickLookImage(FeedImageCache::savePathForItem(item), r);
+#else
+    auto imageUrl = item->background;
+    FeedImageCache::getImageForItem(item, [imageUrl, this](QImage *image) {
+        auto imageWindow = new QLabel(this, Qt::Dialog);
+        imageWindow->setAttribute(Qt::WA_DeleteOnClose);
+        imageWindow->setPixmap(QPixmap::fromImage(*image));
+        imageWindow->setScaledContents(true);
+        imageWindow->setContextMenuPolicy(Qt::ActionsContextMenu);
+        imageWindow->installEventFilter(this);
+        imageWindow->adjustSize();
+        imageWindow->resize(imageWindow->height() * image->width() / image->height(), imageWindow->height());
+        imageWindow->show();
+
+        auto copyImageUrlAction = new QAction(tr("Copy URL"), imageWindow);
+        copyImageUrlAction->setShortcut(QKeySequence::Copy);
+        connect(copyImageUrlAction, &QAction::triggered, [imageUrl]{
+            qApp->clipboard()->setText(imageUrl);
+        });
+        imageWindow->addAction(copyImageUrlAction);
+
+        auto copyImageAction = new QAction(tr("Copy Image"), imageWindow);
+        copyImageAction->setShortcut({"Ctrl+Shift+C"});
+        connect(copyImageAction, &QAction::triggered, [image]{
+            qApp->clipboard()->setImage(*image);
+        });
+        imageWindow->addAction(copyImageAction);
+    });
+#endif
+
+    _openImageModelIndex = QModelIndex();
 }
 
 void FeedWidget::requestFeed(quint32 postIdForOlderFeed, std::function<int(const TextItemList &)> processFeedCallback, std::function<void(void)> afterDisplayingFeedCallback)
