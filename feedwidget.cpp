@@ -19,9 +19,10 @@
 FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSource, QWidget *parent) : QWidget(parent), ui(new Ui::FeedWidget), _feedModel(new FeedListModel(geoSource, this)), _requestPart(requestPart), _requestFeedOnFirstShow(true)
 {
     ui->setupUi(this);
-    installEventFilter(this);
 
-    ui->listView->setContextMenuPolicy(Qt::CustomContextMenu);
+    installEventFilter(this);
+    ui->listView->viewport()->installEventFilter(this);
+
     ui->listView->setModel(_feedModel);
     ui->listView->setItemDelegate(new FeedItemDelegate(this));
 
@@ -105,36 +106,31 @@ void FeedWidget::requestFeed()
 
 bool FeedWidget::eventFilter(QObject *o, QEvent *e)
 {
-    if (e->type() == QEvent::Show && o == this)
+    if (e->type() == QEvent::Show && o == this && _requestFeedOnFirstShow)
     {
-        if (_requestFeedOnFirstShow)
-        {
-            _requestFeedOnFirstShow = false;
-            QTimer::singleShot(0, this, SLOT(requestFeed()));
-            return true;
-        }
+        _requestFeedOnFirstShow = false;
+        QTimer::singleShot(0, this, SLOT(requestFeed()));
+        return true;
     }
 
     if (e->type() == QEvent::KeyPress)
     {
-        switch (static_cast<QKeyEvent *>(e)->key())
+        int key = static_cast<QKeyEvent *>(e)->key();
+        if (o == ui->listView->viewport())
         {
-        case Qt::Key_Escape:
-            if (o != this) // image window
-            {
-                qobject_cast<QWidget *>(o)->close();
-                return true;
-            }
-            break;
-        case Qt::Key_Space:
-            if (o == this)
+            if (key == Qt::Key_Space)
             {
                 // TODO: show image of the current item
 //                return true;
             }
-            break;
-        default:
-            break;
+        }
+        else if (o != this) // image window
+        {
+            if (key == Qt::Key_Escape)
+            {
+                qobject_cast<QWidget *>(o)->close();
+                return true;
+            }
         }
     }
     return QWidget::eventFilter(o, e);
