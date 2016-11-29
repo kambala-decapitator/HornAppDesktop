@@ -206,7 +206,8 @@ void CommentsWidget::loadOldComments()
 
 void CommentsWidget::sendComment()
 {
-    auto comment = ui->plainTextEdit->toPlainText(), commentToSend = comment, appealing = appealTo(_recipientNickname);
+    // toPlainText() replaces non-breaking space with normal space, so we must do the same to stay consistent
+    auto comment = ui->plainTextEdit->toPlainText(), commentToSend = comment, appealing = appealTo(_recipientNickname).replace(QChar::Nbsp, QLatin1Char(' '));
     if (!_recipientNickname.isEmpty())
     {
         if (commentToSend.startsWith(appealing))
