@@ -15,7 +15,6 @@
 #include <QPushButton>
 
 #include <QTimer>
-#include <QDebug>
 
 FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSource, QWidget *parent) : QWidget(parent), ui(new Ui::FeedWidget), _feedModel(new FeedListModel(geoSource, this)), _requestPart(requestPart)
 {
@@ -89,7 +88,6 @@ bool FeedWidget::eventFilter(QObject *o, QEvent *e)
         {
             if (key == Qt::Key_Space)
             {
-                // TODO: handle space when anything is focused
                 _openImageModelIndex = ui->listView->indexAt(QPoint());
                 openImage();
                 return true;

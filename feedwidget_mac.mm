@@ -2,6 +2,7 @@
 
 #import <AppKit/AppKit.h>
 #import <Quartz/Quartz.h>
+#include <QApplication>
 
 
 // functions copied from qtbase/src/plugins/platforms/cocoa/qcocoahelpers.mm
@@ -37,7 +38,20 @@ NSRect qt_mac_flipRect(const QRect &rect)
 
 - (BOOL)acceptsPreviewPanelControl:(QLPreviewPanel *__unused)panel { return YES; }
 - (void)beginPreviewPanelControl:(QLPreviewPanel *)panel { panel.dataSource = self; panel.delegate = self; }
-- (void)endPreviewPanelControl:(QLPreviewPanel *)panel   { panel.dataSource = nil;  panel.delegate = nil; }
+- (void)endPreviewPanelControl:(QLPreviewPanel *)panel
+{
+    panel.dataSource = nil;
+    panel.delegate = nil;
+
+    for (auto w : qApp->topLevelWidgets())
+    {
+        if (w->objectName() == QLatin1String("MainWindow"))
+        {
+            w->activateWindow();
+            break;
+        }
+    }
+}
 
 #pragma mark - QLPreviewPanelDataSource
 
