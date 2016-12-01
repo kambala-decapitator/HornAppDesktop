@@ -4,7 +4,6 @@
 #include <QDialog>
 #include <QSet>
 #include <QDateTime>
-
 #include "feeditem.h"
 #include "requestmanager.h"
 
@@ -20,7 +19,7 @@ class CommentsWidget : public QWidget
 
 public:
     explicit CommentsWidget(decltype(FeedItem::id) postId, FeedItem *existingItem = nullptr, QWidget *parent = nullptr);
-    ~CommentsWidget();
+    virtual ~CommentsWidget();
 
     QPlainTextEdit *commentTextEdit();
     decltype(FeedItem::id) postId() const { return _postId; }

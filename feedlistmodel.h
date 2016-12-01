@@ -2,7 +2,6 @@
 #define FEEDLISTMODEL_H
 
 #include <QAbstractListModel>
-
 #include "feeditem.h"
 
 class QGeoPositionInfoSource;

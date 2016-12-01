@@ -3,7 +3,6 @@
 
 #include <QString>
 #include <QCache>
-
 #include <functional>
 
 class QNetworkAccessManager;

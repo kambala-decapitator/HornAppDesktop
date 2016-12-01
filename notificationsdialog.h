@@ -2,7 +2,6 @@
 #define NOTIFICATIONSDIALOG_H
 
 #include <QDialog>
-
 #include "feeditem.h"
 
 namespace Ui {
@@ -16,7 +15,7 @@ class NotificationsDialog : public QDialog
 
 public:
     explicit NotificationsDialog(QWidget *parent = 0);
-    ~NotificationsDialog();
+    virtual ~NotificationsDialog();
 
     void openPostFromNotificationId(decltype(NotificationItem::id) notificationId, bool openPost);
 

@@ -24,7 +24,7 @@ class FeedWidget : public QWidget
 
 public:
     explicit FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSource, QWidget *parent = 0);
-    ~FeedWidget();
+    virtual ~FeedWidget();
 
 public slots:
     void requestFeed();

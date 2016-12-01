@@ -2,11 +2,8 @@
 #define REQUESTMANAGER_H
 
 #include <QObject>
-
 #include <QNetworkRequest>
-
 #include <functional>
-
 #include "feeditem.h"
 
 typedef std::function<void(const TextItemList &)> FeedLambda;

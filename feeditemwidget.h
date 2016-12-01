@@ -13,7 +13,7 @@ class FeedItemWidget : public QWidget
 
 public:
     explicit FeedItemWidget(QWidget *parent = 0);
-    ~FeedItemWidget();
+    virtual ~FeedItemWidget();
 
 public:
     Ui::FeedItemWidget *ui;

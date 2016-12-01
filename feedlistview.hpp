@@ -8,7 +8,6 @@ class FeedListView : public QListView
 {
 public:
     explicit FeedListView(QWidget *parent = 0) : QListView(parent) {}
-    virtual ~FeedListView() {}
 
 protected:
     bool eventFilter(QObject *o, QEvent *e)

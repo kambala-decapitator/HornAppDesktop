@@ -1,8 +1,9 @@
 #include "feedwidget.h"
 
+#include <QApplication>
+
 #import <AppKit/AppKit.h>
 #import <Quartz/Quartz.h>
-#include <QApplication>
 
 
 // functions copied from qtbase/src/plugins/platforms/cocoa/qcocoahelpers.mm
@@ -10,7 +11,7 @@
 int qt_mac_mainScreenHeight()
 {
     // simplified original version
-    return [NSScreen screens].firstObject.frame.size.height;
+    return CGRectGetHeight([NSScreen screens].firstObject.frame);
 }
 
 int qt_mac_flipYCoordinate(int y)

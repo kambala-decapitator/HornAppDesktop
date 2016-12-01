@@ -3,7 +3,6 @@
 
 #include <QDialog>
 #include <QSet>
-
 #include "feeditem.h"
 
 namespace Ui {
@@ -36,7 +35,7 @@ private:
     Ui::CommentsDialog *ui;
 
     explicit CommentsDialog();
-    ~CommentsDialog();
+    virtual ~CommentsDialog();
 };
 
 #endif // COMMENTSDIALOG_H
