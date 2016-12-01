@@ -127,15 +127,21 @@ void FeedWidget::openImage()
 #ifdef CUSTOM_IMAGE_WINDOW
     auto imageUrl = item->background;
     FeedImageCache::getImageForItem(item, [imageUrl, this](QImage *image) {
-        _imageWindow = new QLabel(this, Qt::Dialog);
-        _imageWindow->setAttribute(Qt::WA_DeleteOnClose);
+        if (!_imageWindow)
+        {
+            _imageWindow = new QLabel(this, Qt::Dialog);
+            _imageWindow->setAttribute(Qt::WA_DeleteOnClose);
+            _imageWindow->setScaledContents(true);
+            _imageWindow->setContextMenuPolicy(Qt::ActionsContextMenu);
+            _imageWindow->installEventFilter(this);
+        }
         _imageWindow->setPixmap(QPixmap::fromImage(*image));
-        _imageWindow->setScaledContents(true);
-        _imageWindow->setContextMenuPolicy(Qt::ActionsContextMenu);
-        _imageWindow->installEventFilter(this);
         _imageWindow->adjustSize();
         _imageWindow->resize(_imageWindow->height() * image->width() / image->height(), _imageWindow->height());
         _imageWindow->show();
+
+        for (auto action : _imageWindow->actions())
+            _imageWindow->removeAction(action);
 
         auto copyImageUrlAction = new QAction(tr("Copy URL"), _imageWindow);
         copyImageUrlAction->setShortcut(QKeySequence::Copy);
