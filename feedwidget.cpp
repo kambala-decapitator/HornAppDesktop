@@ -6,7 +6,6 @@
 #include "feedimagecache.h"
 #include "commentsdialog.h"
 
-#include <QLabel>
 #include <QMenu>
 #include <QProgressDialog>
 #include <QInputDialog>
@@ -74,7 +73,7 @@ void FeedWidget::requestFeed()
 
 bool FeedWidget::eventFilter(QObject *o, QEvent *e)
 {
-    if (e->type() == QEvent::Show && o == this && _requestFeedOnFirstShow)
+    if (_requestFeedOnFirstShow && o == this && e->type() == QEvent::Show)
     {
         _requestFeedOnFirstShow = false;
         QTimer::singleShot(0, this, SLOT(requestFeed()));
@@ -93,14 +92,16 @@ bool FeedWidget::eventFilter(QObject *o, QEvent *e)
                 return true;
             }
         }
-        else if (o != this) // image window
+#ifdef CUSTOM_IMAGE_WINDOW
+        else if (o == _imageWindow)
         {
             if (key == Qt::Key_Escape)
             {
-                qobject_cast<QWidget *>(o)->close();
+                _imageWindow->close();
                 return true;
             }
         }
+#endif
     }
     return QWidget::eventFilter(o, e);
 }
@@ -123,37 +124,37 @@ void FeedWidget::openImage()
     if (!item)
         return;
 
-#ifdef Q_OS_MACOS
-    auto r = ui->listView->visualRect(_openImageModelIndex);
-    r.moveTopLeft(ui->listView->mapToGlobal(r.topLeft()));
-    quickLookImage(FeedImageCache::savePathForItem(item), r);
-#else
+#ifdef CUSTOM_IMAGE_WINDOW
     auto imageUrl = item->background;
     FeedImageCache::getImageForItem(item, [imageUrl, this](QImage *image) {
-        auto imageWindow = new QLabel(this, Qt::Dialog);
-        imageWindow->setAttribute(Qt::WA_DeleteOnClose);
-        imageWindow->setPixmap(QPixmap::fromImage(*image));
-        imageWindow->setScaledContents(true);
-        imageWindow->setContextMenuPolicy(Qt::ActionsContextMenu);
-        imageWindow->installEventFilter(this);
-        imageWindow->adjustSize();
-        imageWindow->resize(imageWindow->height() * image->width() / image->height(), imageWindow->height());
-        imageWindow->show();
+        _imageWindow = new QLabel(this, Qt::Dialog);
+        _imageWindow->setAttribute(Qt::WA_DeleteOnClose);
+        _imageWindow->setPixmap(QPixmap::fromImage(*image));
+        _imageWindow->setScaledContents(true);
+        _imageWindow->setContextMenuPolicy(Qt::ActionsContextMenu);
+        _imageWindow->installEventFilter(this);
+        _imageWindow->adjustSize();
+        _imageWindow->resize(_imageWindow->height() * image->width() / image->height(), _imageWindow->height());
+        _imageWindow->show();
 
-        auto copyImageUrlAction = new QAction(tr("Copy URL"), imageWindow);
+        auto copyImageUrlAction = new QAction(tr("Copy URL"), _imageWindow);
         copyImageUrlAction->setShortcut(QKeySequence::Copy);
         connect(copyImageUrlAction, &QAction::triggered, [imageUrl]{
             qApp->clipboard()->setText(imageUrl);
         });
-        imageWindow->addAction(copyImageUrlAction);
+        _imageWindow->addAction(copyImageUrlAction);
 
-        auto copyImageAction = new QAction(tr("Copy Image"), imageWindow);
+        auto copyImageAction = new QAction(tr("Copy Image"), _imageWindow);
         copyImageAction->setShortcut({"Ctrl+Shift+C"});
         connect(copyImageAction, &QAction::triggered, [image]{
             qApp->clipboard()->setImage(*image);
         });
-        imageWindow->addAction(copyImageAction);
+        _imageWindow->addAction(copyImageAction);
     });
+#else
+    auto r = ui->listView->visualRect(_openImageModelIndex);
+    r.moveTopLeft(ui->listView->mapToGlobal(r.topLeft()));
+    quickLookImage(FeedImageCache::savePathForItem(item), r);
 #endif
 
     _openImageModelIndex = QModelIndex();

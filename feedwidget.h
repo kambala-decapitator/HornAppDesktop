@@ -4,14 +4,18 @@
 #include <QWidget>
 #include <QModelIndex>
 #include <functional>
-
 #include "feeditem.h"
+
+#ifndef Q_OS_MACOS
+#include <QPointer>
+#include <QLabel>
+#define CUSTOM_IMAGE_WINDOW
+#endif
 
 namespace Ui {
 class FeedWidget;
 }
 class FeedListModel;
-
 class QGeoPositionInfoSource;
 
 class FeedWidget : public QWidget
@@ -38,6 +42,9 @@ private:
     QString _requestPart;
     bool _requestFeedOnFirstShow = true;
     QModelIndex _openImageModelIndex = QModelIndex();
+#ifdef CUSTOM_IMAGE_WINDOW
+    QPointer<QLabel> _imageWindow = nullptr;
+#endif
 
     void requestFeed(decltype(FeedItem::id) postIdForOlderFeed, std::function<int(const TextItemList &)> processFeedCallback, std::function<void(void)> afterDisplayingFeedCallback = []{});
 #ifdef Q_OS_MACOS
