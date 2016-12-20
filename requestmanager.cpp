@@ -18,10 +18,10 @@
 #endif
 
 static const QLatin1String kHornAppBaseUrl("http://app.hornapp.com/request/v1/"), HornUploadImageBaseUrl("http://upload.img.hornapp.com/request/v1/Horn/Image/");
-static const QLatin1String kToken("1dea204df061332e3703f385f3203327839765260fac58f94202149fa3c6aefc");
 static const int kPostsPerPage = 50, kCommentsPerPage = 100, UpdateUserInfoMsec = 1000 * 60 * 30;
 
-QString RequestManager::userHashIdentifier("525c87a74549fa59bd41829815f024c21cc352fe6ba85aa047a3e1c73f53cf2f");
+QString RequestManager::userHashIdentifier;
+QString RequestManager::token;
 QString RequestManager::nickname;
 int RequestManager::maxCategories = 5;
 double RequestManager::ipLatitude = 0, RequestManager::ipLongitude = 0;
@@ -152,7 +152,7 @@ void RequestManager::createPost(const QString &message, const QStringList &tags,
 
 void RequestManager::uploadImage(QIODevice *device, std::function<void(const QJsonObject &)> callback)
 {
-    auto request = QNetworkRequest(QUrl(QString("%1?token=%2").arg(HornUploadImageBaseUrl, kToken)));
+    auto request = QNetworkRequest(QUrl(QString("%1?token=%2").arg(HornUploadImageBaseUrl, token)));
     request.setHeader(QNetworkRequest::ContentTypeHeader, QLatin1String("application/x-www-form-urlencoded"));
 
     auto reply = _qnam->post(request, device);
@@ -237,7 +237,7 @@ void RequestManager::changePostVote(quint32 postId, bool deleteVote, bool upvote
 
 void RequestManager::requestAuth()
 {
-    patchRequest(QString("Auth/%1").arg(kToken), "{}");
+    patchRequest(QString("Auth/%1").arg(token), "{}");
 }
 
 void RequestManager::requestUserInfo()
@@ -323,7 +323,7 @@ void RequestManager::patchRequest(const QString &urlPart, const QByteArray &data
 
 QNetworkRequest RequestManager::requestFromUrlParts(const QString &urlPart, bool get, const QString &urlJsonText)
 {
-    auto urlString = kHornAppBaseUrl + urlPart + QLatin1String("?token=") + kToken;
+    auto urlString = kHornAppBaseUrl + urlPart + QLatin1String("?token=") + token;
     if (!urlJsonText.isEmpty())
         urlString += QLatin1String("&json=") + QString::fromUtf8(QUrl::toPercentEncoding(urlJsonText));
 

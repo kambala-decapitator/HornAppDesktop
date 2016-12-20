@@ -18,7 +18,7 @@ class RequestManager : public QObject
     Q_OBJECT
 
 public:
-    static QString userHashIdentifier;
+    static QString userHashIdentifier, token;
     static QString nickname;
     static int maxCategories;
 

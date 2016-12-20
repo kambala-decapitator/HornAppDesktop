@@ -22,7 +22,8 @@ SOURCES += main.cpp \
     notificationsdialog.cpp \
     newpostdialog.cpp \
     commentswidget.cpp \
-    commentsdialog.cpp
+    commentsdialog.cpp \
+    mobilesyncwidget.cpp
 
 HEADERS += feedwidget.h \
     requestmanager.h \
@@ -36,7 +37,8 @@ HEADERS += feedwidget.h \
     notificationsdialog.h \
     newpostdialog.h \
     commentswidget.h \
-    commentsdialog.h
+    commentsdialog.h \
+    mobilesyncwidget.h
 
 FORMS += feedwidget.ui \
     feeditemwidget.ui \

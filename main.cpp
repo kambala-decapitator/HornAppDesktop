@@ -2,7 +2,7 @@
 #include <QtConcurrent/QtConcurrentRun>
 #include <ctime>
 
-#include "mainwindow.h"
+#include "mobilesyncwidget.h"
 #include "feedimagecache.h"
 
 int main(int argc, char *argv[])
@@ -15,9 +15,7 @@ int main(int argc, char *argv[])
 
     QtConcurrent::run(FeedImageCache::cleanCache);
     qsrand(time(nullptr));
-
-    MainWindow w;
-    w.show();
+    MobileSyncWidget::syncOrStartApp();
 
     return a.exec();
 }
