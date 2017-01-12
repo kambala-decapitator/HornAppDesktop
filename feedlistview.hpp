@@ -17,7 +17,9 @@ protected:
             auto me = static_cast<QMouseEvent *>(e);
             if (me->button() == Qt::LeftButton)
             {
-                emit doubleClicked(indexAt(me->pos()));
+                // not using simple me->pos() because it returns not the clicked point resulting in index being invalid when label contains a word wider than listview
+                // for an example see post 163452
+                emit doubleClicked(indexAt(mapFromGlobal(me->globalPos())));
                 return true;
             }
         }
