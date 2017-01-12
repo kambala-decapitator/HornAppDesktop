@@ -207,7 +207,7 @@ void CommentsWidget::loadOldComments()
 void CommentsWidget::sendComment()
 {
     // toPlainText() replaces non-breaking space with normal space, so we must do the same to stay consistent
-    auto comment = ui->plainTextEdit->toPlainText(), commentToSend = comment, appealing = appealTo(_recipientNickname).replace(QChar::Nbsp, QLatin1Char(' '));
+    auto commentToSend = ui->plainTextEdit->toPlainText(), appealing = appealTo(_recipientNickname).replace(QChar::Nbsp, QLatin1Char(' '));
     if (!_recipientNickname.isEmpty())
     {
         if (commentToSend.startsWith(appealing))
@@ -225,10 +225,10 @@ void CommentsWidget::sendComment()
         return;
 
     ui->sendButton->setDisabled(true);
-    RequestManager::instance().postComment(_postId, commentToSend, _recipientCommentId, [comment, this](bool ok){
+    RequestManager::instance().postComment(_postId, commentToSend, _recipientCommentId, [commentToSend, this](bool ok){
         if (ok)
         {
-            addComment(comment);
+            addComment(commentToSend, _recipientNickname);
             ui->plainTextEdit->clear();
 
             _recipientCommentId = 0;
@@ -293,7 +293,7 @@ void CommentsWidget::showComments(const QSet<quint32> &highlightedComments)
     for (int i = 0; i < _comments.size(); ++i)
     {
         CommentItem *comment = static_cast<CommentItem *>(_comments.at(i));
-        auto lwItem = addComment(comment->message, comment->nickname, comment->reputation, comment->recipientNickname, QDateTime::fromTime_t(comment->timestamp));
+        auto lwItem = addComment(comment->message, comment->recipientNickname, comment->nickname, comment->reputation, QDateTime::fromTime_t(comment->timestamp));
         showVoteStatusAtRow(i);
 
         if (highlightedComments.contains(comment->id))
@@ -304,7 +304,7 @@ void CommentsWidget::showComments(const QSet<quint32> &highlightedComments)
     }
 }
 
-QListWidgetItem *CommentsWidget::addComment(const QString &comment, const QString &nickname, qint32 reputation, const QString &recipient, const QDateTime &dateTime)
+QListWidgetItem *CommentsWidget::addComment(const QString &comment, const QString &recipient, const QString &nickname, qint32 reputation, const QDateTime &dateTime)
 {
     auto today = QDate::currentDate(), date = dateTime.date();
     auto daysAgo = date.daysTo(today);
@@ -319,9 +319,10 @@ QListWidgetItem *CommentsWidget::addComment(const QString &comment, const QStrin
     auto dateTimeStr = dateTime.toString(dateFormat);
     if (daysAgo == 1)
         dateTimeStr = tr("yesterday %1").arg(dateTimeStr);
-    auto text = QString("(%1) [%2] %3: ").arg(reputation).arg(dateTimeStr, nickname);
+    auto text = QString("(%1) [%2] %3").arg(reputation).arg(dateTimeStr, nickname);
     if (!recipient.isEmpty())
-        text += appealTo(recipient);
+        text += QStringLiteral(" ➽ ") + recipient;
+    text += QStringLiteral(": ");
 
     auto item = new QListWidgetItem(text + comment, ui->listWidget);
     if (nickname == RequestManager::nickname)
