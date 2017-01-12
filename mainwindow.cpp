@@ -16,6 +16,7 @@
 
 static const QLatin1String MainWindowSettingsKey("MainWindow"), NotificationsDialogSettingsKey("NotificationsDialog");
 static const QLatin1String WindowPositionSettingsKey("pos"), WindowSizeSettingsKey("size");
+static const QLatin1String NotificationsDialogVisibleSettingsKey("notificationsDialogVisible");
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow), _tabWidget(new QTabWidget(this)), _notificationsDlg(new NotificationsDialog)
 {
@@ -40,7 +41,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     _notificationsDlg->installEventFilter(this);
-    _notificationsDlg->show();
+    if (settings.value(NotificationsDialogVisibleSettingsKey, true).toBool())
+    {
+        _notificationsDlg->show();
+        ui->actionNotifications->setChecked(true);
+    }
 
 #ifdef Q_OS_MACOS
     ui->menubar->insertMenu(ui->menuHelp->menuAction(), new QMenu(tr("Edit"), ui->menubar));
@@ -105,6 +110,7 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
             CommentsDialog::instance().close();
 
             QSettings settings;
+            settings.setValue(NotificationsDialogVisibleSettingsKey, _notificationsDlg->isVisible());
             for (auto windowData : windowsToRestoreGeometry())
             {
                 settings.beginGroup(windowData.first);
