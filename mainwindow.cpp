@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
 #ifdef Q_OS_MACOS
-    ui->menubar->insertMenu(ui->menuHelp->menuAction(), new QMenu(tr("Edit"), ui->menubar));
+    ui->menubar->insertMenu(ui->menuHelp->menuAction(), new QMenu(tr("Редактировать"), ui->menubar));
 #endif
 
     ui->actionNewPost->setShortcut(QKeySequence::New);
@@ -62,10 +62,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     });
     RequestManager::instance().init(!_geoSource);
 
-    auto tabs = QList<QPair<QString, QString>>({{tr("New"), QLatin1String("HornNew")}});
-    for (const auto &tab : QList<QPair<QString, QString>>({{tr("Commented"), QLatin1String("/Commented")}, {tr("Liked"), QLatin1String("/Liked")}, {tr("My"), QString()}}))
+    auto tabs = QList<QPair<QString, QString>>({{tr("Новые"), QLatin1String("HornNew")}});
+    for (const auto &tab : QList<QPair<QString, QString>>({{tr("Обсуждаемые"), QLatin1String("/Commented")}, {tr("Понравившиеся"), QLatin1String("/Liked")}, {tr("Мои"), QString()}}))
         tabs << qMakePair(tab.first, "User/" + RequestManager::userHashIdentifier + tab.second + "/Horn");
-    tabs << qMakePair(tr("Top"), QLatin1String("HornTop"));
+    tabs << qMakePair(tr("Горячие"), QLatin1String("HornTop"));
     for (const auto &tab : tabs)
     {
         auto fw = new FeedWidget(tab.second, _geoSource, this);
@@ -82,7 +82,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->actionAboutQt, &QAction::triggered, qApp, &QApplication::aboutQt);
 
     connect(ui->actionOpenPost, &QAction::triggered, [this]{
-        int postId = QInputDialog::getInt(this, QString(), tr("Post ID:"), 0, 0);
+        int postId = QInputDialog::getInt(this, QString(), tr("Номер поста:"), 0, 0);
         if (postId)
             CommentsDialog::instance().showComments(postId);
     });

@@ -18,7 +18,7 @@ CommentsWidget::CommentsWidget(decltype(FeedItem::id) postId, FeedItem *existing
     ui->plainTextEdit->setFocus();
 
     // context menu
-    auto upvoteAction = new QAction(tr("Upvote"), this), downvoteAction = new QAction(tr("Downvote"), this), deleteVoteAction = new QAction(tr("Delete vote"), this);
+    auto upvoteAction = new QAction(tr("Лайкнуть"), this), downvoteAction = new QAction(tr("Дизлайкнуть"), this), deleteVoteAction = new QAction(tr("Удалить лайк"), this);
 
     connect(upvoteAction, &QAction::triggered, [upvoteAction, downvoteAction, deleteVoteAction, this]{
         int row = ui->listWidget->currentRow();
@@ -81,7 +81,7 @@ CommentsWidget::CommentsWidget(decltype(FeedItem::id) postId, FeedItem *existing
     separator->setSeparator(true);
     ui->listWidget->addAction(separator);
 
-    auto copyAction = new QAction(tr("Copy"), this);
+    auto copyAction = new QAction(tr("Копировать"), this);
     copyAction->setShortcut(QKeySequence::Copy);
     connect(copyAction, &QAction::triggered, this, &CommentsWidget::copyComments);
     ui->listWidget->addAction(copyAction);
@@ -167,7 +167,7 @@ void CommentsWidget::loadNewComments(bool scrollToBottom, const QSet<quint32> &h
             ui->messageLabel->setText(QString("%1\n%2 | %3").arg(feedItem->message).arg(feedItem->comments).arg(feedItem->reputation));
         else
         {
-            auto errorStr = tr("Error loading post. Probably it has been deleted.");
+            auto errorStr = tr("Ошибка загрузки поста. Вероятно, он был удалён.");
             if (ui->messageLabel->text().isEmpty())
                 ui->messageLabel->setText(errorStr);
             else if (!_postLoadingError)
@@ -217,7 +217,7 @@ void CommentsWidget::sendComment()
     }
     if (commentToSend.length() > MaxCommentLength)
     {
-        QMessageBox::critical(this, QString(), tr("Comment can't be longer than %1 characters.\nPlease split it into multiple.").arg(MaxCommentLength));
+        QMessageBox::critical(this, QString(), tr("Комментарий не может быть длиннее %1 символов.\nПожалуйста, разделите его на несколько.").arg(MaxCommentLength));
         return;
     }
 
@@ -235,7 +235,7 @@ void CommentsWidget::sendComment()
             _recipientNickname.clear();
         }
         else
-            QMessageBox::critical(this, QString(), tr("Error sending comment"));
+            QMessageBox::critical(this, QString(), tr("Ошибка отправки комментария"));
         ui->sendButton->setEnabled(true);
     });
 }
@@ -318,7 +318,7 @@ QListWidgetItem *CommentsWidget::addComment(const QString &comment, const QStrin
 
     auto dateTimeStr = dateTime.toString(dateFormat);
     if (daysAgo == 1)
-        dateTimeStr = tr("yesterday %1").arg(dateTimeStr);
+        dateTimeStr = tr("вчера %1").arg(dateTimeStr);
     auto text = QString("(%1) [%2] %3").arg(reputation).arg(dateTimeStr, nickname);
     if (!recipient.isEmpty())
         text += QStringLiteral(" ➽ ") + recipient;

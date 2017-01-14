@@ -20,14 +20,27 @@
       <item>
        <widget class="QPushButton" name="newPostButton">
         <property name="text">
-         <string>New Post</string>
+         <string>Создать пост</string>
         </property>
        </widget>
       </item>
       <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
        <widget class="QPushButton" name="refreshFeedButton">
         <property name="text">
-         <string>Refresh Feed</string>
+         <string>Обновить ленту</string>
         </property>
        </widget>
       </item>
@@ -46,7 +59,7 @@
    </property>
    <widget class="QMenu" name="menuFeed">
     <property name="title">
-     <string>Feed</string>
+     <string>Лента</string>
     </property>
     <addaction name="actionNewPost"/>
     <addaction name="actionRefreshFeed"/>
@@ -56,7 +69,7 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>Справка</string>
     </property>
     <addaction name="actionAboutQt"/>
    </widget>
@@ -66,17 +79,26 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionNewPost">
    <property name="text">
-    <string>New Post...</string>
+    <string>Создать пост…</string>
+   </property>
+   <property name="toolTip">
+    <string>Создать пост</string>
    </property>
   </action>
   <action name="actionRefreshFeed">
    <property name="text">
-    <string>Refresh</string>
+    <string>Обновить ленту</string>
+   </property>
+   <property name="toolTip">
+    <string>Обновить ленту</string>
    </property>
   </action>
   <action name="actionAboutQt">
    <property name="text">
-    <string>About Qt</string>
+    <string>О Qt</string>
+   </property>
+   <property name="toolTip">
+    <string>О Qt</string>
    </property>
    <property name="menuRole">
     <enum>QAction::AboutQtRole</enum>
@@ -87,7 +109,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Notifications</string>
+    <string>Уведомления</string>
+   </property>
+   <property name="toolTip">
+    <string>Уведомления</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+N</string>
@@ -95,7 +120,10 @@
   </action>
   <action name="actionOpenPost">
    <property name="text">
-    <string>Open post...</string>
+    <string>Открыть пост…</string>
+   </property>
+   <property name="toolTip">
+    <string>Открыть пост</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>

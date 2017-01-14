@@ -39,7 +39,7 @@ FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSo
         if (!item)
             return;
 
-        auto openImageAction = new QAction(tr("Open image"), ui->listView);
+        auto openImageAction = new QAction(tr("Открыть изображение"), ui->listView);
         connect(openImageAction, SIGNAL(triggered(bool)), SLOT(openImage()));
         _openImageModelIndex = index;
 
@@ -47,7 +47,7 @@ FeedWidget::FeedWidget(const QString &requestPart, QGeoPositionInfoSource *geoSo
 #ifdef Q_OS_MACOS
         if (item->coordinates.isValid())
         {
-            auto showLocationAction = new QAction(tr("Show location"), ui->listView);
+            auto showLocationAction = new QAction(tr("Показать местоположение"), ui->listView);
             connect(showLocationAction, &QAction::triggered, [item, this]{
                 showLocation(item->coordinates.latitude(), item->coordinates.longitude());
             });
@@ -143,14 +143,14 @@ void FeedWidget::openImage()
         for (auto action : _imageWindow->actions())
             _imageWindow->removeAction(action);
 
-        auto copyImageUrlAction = new QAction(tr("Copy URL"), _imageWindow);
+        auto copyImageUrlAction = new QAction(tr("Копировать ссылку"), _imageWindow);
         copyImageUrlAction->setShortcut(QKeySequence::Copy);
         connect(copyImageUrlAction, &QAction::triggered, [imageUrl]{
             qApp->clipboard()->setText(imageUrl);
         });
         _imageWindow->addAction(copyImageUrlAction);
 
-        auto copyImageAction = new QAction(tr("Copy Image"), _imageWindow);
+        auto copyImageAction = new QAction(tr("Копировать изображение"), _imageWindow);
         copyImageAction->setShortcut({"Ctrl+Shift+C"});
         connect(copyImageAction, &QAction::triggered, [image]{
             qApp->clipboard()->setImage(*image);
@@ -168,7 +168,7 @@ void FeedWidget::openImage()
 
 void FeedWidget::requestFeed(quint32 postIdForOlderFeed, std::function<int(const TextItemList &)> processFeedCallback, std::function<void(void)> afterDisplayingFeedCallback)
 {
-    auto progress = new QProgressDialog(tr("Updating feed..."), QString(), 0, 0, this, Qt::CustomizeWindowHint);
+    auto progress = new QProgressDialog(tr("Обновление ленты…"), QString(), 0, 0, this, Qt::CustomizeWindowHint);
     progress->setWindowModality(Qt::WindowModal);
     progress->show();
 
@@ -178,7 +178,7 @@ void FeedWidget::requestFeed(quint32 postIdForOlderFeed, std::function<int(const
             return;
         int startIndex = processFeedCallback(feed);
 
-        auto loadNextPostsButton = new QPushButton(tr("Load Next"), this);
+        auto loadNextPostsButton = new QPushButton(tr("Загрузить следующие"), this);
         connect(loadNextPostsButton, SIGNAL(clicked()), SLOT(loadNextPosts()));
         ui->listView->setIndexWidget(_feedModel->index(_feedModel->rowCount() - 1), loadNextPostsButton);
 

@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Notifications</string>
+   <string>Уведомления</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -30,7 +30,7 @@
    <item>
     <widget class="QPushButton" name="markAllReadButton">
      <property name="text">
-      <string>Mark All Read</string>
+      <string>Отметить все прочитанными</string>
      </property>
     </widget>
    </item>

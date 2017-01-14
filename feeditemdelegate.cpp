@@ -66,7 +66,7 @@ private:
 
 QSize FeedItemDelegate::sizeHint(const QStyleOptionViewItem &/*option*/, const QModelIndex &index) const
 {
-    return QSize(0, itemAtIndex(index) ? 250 : 50);
+    return QSize(0, itemAtIndex(index) ? 300 : 50);
 }
 
 void FeedItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const

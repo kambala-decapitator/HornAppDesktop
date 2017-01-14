@@ -24,8 +24,8 @@ QVariant FeedListModel::data(const QModelIndex &index, int role) const
         QString distance;
         if (coordinate.isValid())
         {
-            distance = item->coordinates.isValid() ? tr("%1 km").arg(qRound(coordinate.distanceTo(item->coordinates) / 10000) * 10)
-                                                   : tr("somewhere");
+            distance = item->coordinates.isValid() ? tr("%1 км").arg(qRound(coordinate.distanceTo(item->coordinates) / 10000) * 10)
+                                                   : tr("где-то");
             distance += "\n\n";
         }
         return distance + item->tags.join(QChar(QChar::LineFeed));

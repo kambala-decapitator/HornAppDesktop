@@ -104,13 +104,13 @@ void NotificationsDialog::requestNotifications()
             if (notification->type == QLatin1String("NOTICE_NEW_HORN_COMMENT_REPLY") || notification->type == QLatin1String("NOTICE_NEW_HORN_COMMENT"))
                 text = notification->message;
             else if (notification->type == QLatin1String("NOTICE_NEW_HORN_COMMENT_VOTE"))
-                text = tr("comment vote");
+                text = tr("(диз)лайк комментария");
             else if (notification->type == QLatin1String("NOTICE_DEL_HORN_COMMENT_VOTE"))
-                text = tr("comment vote removed");
+                text = tr("(диз)лайк комментария удален");
             else if (notification->type == QLatin1String("NOTICE_NEW_HORN_VOTE"))
-                text = tr("post vote");
+                text = tr("(диз)лайк поста");
             else if (notification->type == QLatin1String("NOTICE_DEL_HORN_VOTE"))
-                text = tr("post vote removed");
+                text = tr("(диз)лайк поста удален");
             else
                 text = notification->type + " - " + notification->message;
             lwItem->setText(text);

@@ -76,7 +76,7 @@
       <string notr="true"/>
      </property>
      <property name="placeholderText">
-      <string>Enter your comment...</string>
+      <string>Введите ваш комментарий…</string>
      </property>
     </widget>
    </item>
@@ -84,6 +84,9 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QLabel" name="charactersCountLabel">
+       <property name="toolTip">
+        <string>Количество символов</string>
+       </property>
        <property name="text">
         <string>0</string>
        </property>
@@ -114,7 +117,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Send</string>
+        <string>Отправить</string>
        </property>
       </widget>
      </item>

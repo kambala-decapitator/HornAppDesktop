@@ -54,11 +54,11 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
         QStringList extensions;
         for (const auto &extension : QImageReader::supportedImageFormats())
             extensions << QLatin1String("*.") + extension;
-        _imagesFilter = tr("Supported images (%1)").arg(extensions.join(QChar::Space));
+        _imagesFilter = tr("Поддерживаемые изображения (%1)").arg(extensions.join(QChar::Space));
     }
 
     connect(ui->selectImageButton, &QPushButton::clicked, [this]{
-        auto path = QFileDialog::getOpenFileName(this, tr("Select image"), QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first(), _imagesFilter);
+        auto path = QFileDialog::getOpenFileName(this, tr("Выберите изображение"), QStandardPaths::standardLocations(QStandardPaths::HomeLocation).first(), _imagesFilter);
         if (!path.isEmpty())
             ui->imagePathLineEdit->setText(path);
     });
@@ -86,12 +86,12 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
         auto message = ui->plainTextEdit->toPlainText(), imagePath = ui->imagePathLineEdit->text();
         if (message.size() > MaxPostLength)
         {
-            QMessageBox::critical(this, QString(), tr("Post can't be longer than %1 characters.\nPlease write the rest in comments.").arg(MaxPostLength));
+            QMessageBox::critical(this, QString(), tr("Пост не может быть длиннее %1 символов.\nПожалуйста, допишите всё остальное в комментариях.").arg(MaxPostLength));
             return;
         }
         if (message.isEmpty() && imagePath.isEmpty())
         {
-            QMessageBox::critical(this, QString(), tr("Empty message is allowed only with your own image"));
+            QMessageBox::critical(this, QString(), tr("Пустое сообщение разрешено только при загрузке изображения"));
             return;
         }
 
@@ -104,12 +104,12 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
         }
         if (selectedCategories.isEmpty())
         {
-            QMessageBox::critical(this, QString(), tr("You must select at least one category"));
+            QMessageBox::critical(this, QString(), tr("Вы должны выбрать хотя бы одну категорию"));
             return;
         }
         if (selectedCategories.size() > RequestManager::maxCategories)
         {
-            QMessageBox::critical(this, QString(), tr("You can't select more than %1 categories").arg(RequestManager::maxCategories));
+            QMessageBox::critical(this, QString(), tr("Вы не можете выбрать более %1 категорий").arg(RequestManager::maxCategories));
             return;
         }
 
@@ -157,7 +157,7 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
                     accept();
                 }
                 else
-                    QMessageBox::critical(this, QString(), tr("Error creating new post"));
+                    QMessageBox::critical(this, QString(), tr("Ошибка создания поста"));
             });
         };
         if (imagePath.isEmpty())
@@ -170,7 +170,7 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
         if (!imageReader->canRead())
         {
             delete imageReader;
-            QMessageBox::critical(this, QString(), tr("Error reading image file"));
+            QMessageBox::critical(this, QString(), tr("Ошибка чтения файла изображения"));
             return;
         }
 
@@ -179,7 +179,7 @@ NewPostDialog::NewPostDialog(QGeoPositionInfoSource *geoSource, QWidget *parent)
 
             if (json.isEmpty())
             {
-                QMessageBox::critical(this, QString(), tr("Error uploading image"));
+                QMessageBox::critical(this, QString(), tr("Ошибка загрузки изображения"));
                 return;
             }
 
