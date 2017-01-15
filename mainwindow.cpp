@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
 #ifdef Q_OS_MACOS
-    ui->menubar->insertMenu(ui->menuHelp->menuAction(), new QMenu(tr("Редактировать"), ui->menubar));
+    ui->menubar->insertMenu(ui->menuHelp->menuAction(), new QMenu(tr("Edit"), ui->menubar));
 #endif
 
     ui->actionNewPost->setShortcut(QKeySequence::New);
