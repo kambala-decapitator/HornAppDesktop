@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     a.setOrganizationName(QStringLiteral("kambala"));
     a.setOrganizationDomain(QStringLiteral("com.kambala"));
 #ifdef Q_OS_WIN
-    a.setFont(QFont("Segoe UI Emoji", 10));
+    a.setFont(QFont("Segoe UI Symbol", 10));
 #endif
 
     QtConcurrent::run(FeedImageCache::cleanCache);

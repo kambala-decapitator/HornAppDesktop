@@ -321,7 +321,7 @@ QListWidgetItem *CommentsWidget::addComment(const QString &comment, const QStrin
         dateTimeStr = tr("вчера %1").arg(dateTimeStr);
     auto text = QString("(%1) [%2] %3").arg(reputation).arg(dateTimeStr, nickname);
     if (!recipient.isEmpty())
-        text += QStringLiteral(" ➽ ") + recipient;
+        text += u8" \u27BD " + recipient;
     text += QStringLiteral(": ");
 
     auto item = new QListWidgetItem(text + comment, ui->listWidget);
