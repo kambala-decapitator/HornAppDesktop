@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QProgressBar>
 #include <QMessageBox>
+#include <QApplication>
 
 #include <QSettings>
 #include <QRegularExpression>
@@ -83,12 +84,15 @@ MobileSyncWidget::MobileSyncWidget(QWidget *parent) : QWidget(parent)
     auto server = new QTcpServer{this};
     connect(server, &QTcpServer::newConnection, [server, this]{
         auto socket = server->nextPendingConnection();
-        connect(socket, &QTcpSocket::readyRead, [socket, this]{
+        connect(socket, &QTcpSocket::readyRead, [socket, server, this]{
             QLatin1String hexStringCapturedPattern{"([a-f\\d]+)"};
             QRegularExpression re{QString{"hornapp.+User/%1.+token=%1"}.arg(hexStringCapturedPattern)};
             auto match = re.match(QString::fromLatin1(socket->readAll()));
             if (match.hasMatch())
             {
+                server->close();
+                qApp->processEvents();
+
                 auto userId = match.captured(1), token = match.captured(2);
 
                 QSettings settings;
@@ -102,7 +106,7 @@ MobileSyncWidget::MobileSyncWidget(QWidget *parent) : QWidget(parent)
         });
     });
 
-    if (!server->listen(QHostAddress::Any))
+    if (!server->listen(QHostAddress::Any) && !server->listen(QHostAddress::Any))
     {
         QMessageBox::critical(this, QString(), tr("Невозможно открыть сокет:\n%1\nПерезапустите приложение и попробуйте снова.").arg(server->errorString()));
         close();
