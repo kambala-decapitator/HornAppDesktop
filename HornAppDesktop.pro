@@ -57,3 +57,6 @@ macx {
         -framework AppKit \
         -framework Quartz
 }
+win32 {
+    QT += winextras
+}

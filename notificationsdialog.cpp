@@ -10,6 +10,9 @@
 
 #ifdef Q_OS_MACOS
 #include <QtMac>
+#elif defined(Q_OS_WIN)
+#include <QWinTaskbarButton>
+#include <QPainter>
 #endif
 
 static const int RefreshSecs = 30;
@@ -42,8 +45,8 @@ NotificationsDialog::NotificationsDialog(QWidget *parent) : QDialog(parent, Qt::
         }
         RequestManager::instance().markNotificationsRead(unreadIds);
 
+        updateAppIconWithUnreadCount(0);
 #ifdef Q_OS_MACOS
-        updateMacBadge(0);
         removeSystemNotifications();
 #endif
     });
@@ -132,10 +135,7 @@ void NotificationsDialog::requestNotifications()
 
         if (unread && hasNew)
             qApp->alert(this);
-
-#ifdef Q_OS_MACOS
-        updateMacBadge(unread);
-#endif
+        updateAppIconWithUnreadCount(unread);
     });
 }
 
@@ -151,9 +151,9 @@ void NotificationsDialog::openPostFromNotificationWithIndex(int row, bool openPo
 
         notification->isRead = true;
         setReadStateForListItem(true, ui->listWidget->item(row));
+        updateAppIconWithUnreadCount(_unreadCount - 1);
 
 #ifdef Q_OS_MACOS
-        updateMacBadge(QtMac::badgeLabelText().toInt() - 1);
         removeSystemNotificationWithId(notification->id);
 #endif
     }
@@ -164,9 +164,32 @@ void NotificationsDialog::setReadStateForListItem(bool isRead, QListWidgetItem *
     item->setTextColor(isRead ? Qt::gray : Qt::black);
 }
 
-#ifdef Q_OS_MACOS
-void NotificationsDialog::updateMacBadge(int value)
+void NotificationsDialog::updateAppIconWithUnreadCount(int value)
 {
+    _unreadCount = value;
+#ifdef Q_OS_MACOS
     QtMac::setBadgeLabelText(value > 0 ? QString::number(value) : QString());
-}
+#elif defined(Q_OS_WIN)
+    static bool unsupported = QSysInfo::WindowsVersion < QSysInfo::WV_WINDOWS7;
+    if (unsupported || !_mainWindowHandle)
+        return;
+
+    if (!_taskbarButton)
+    {
+        _taskbarButton = new QWinTaskbarButton(this);
+        _taskbarButton->setWindow(_mainWindowHandle);
+    }
+
+    if (value > 0)
+    {
+        QPixmap pixmap(16, 16);
+        QPainter painter(&pixmap);
+        painter.setPen(Qt::black);
+        painter.setFont(QFont(qApp->font().family(), 10));
+        painter.drawText(pixmap.rect(), Qt::AlignCenter, QString::number(value));
+        _taskbarButton->setOverlayIcon({pixmap});
+    }
+    else
+        _taskbarButton->clearOverlayIcon();
 #endif
+}

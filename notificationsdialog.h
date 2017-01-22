@@ -8,6 +8,9 @@ namespace Ui {
 class NotificationsDialog;
 }
 class QListWidgetItem;
+#ifdef Q_OS_WIN
+class QWinTaskbarButton;
+#endif
 
 class NotificationsDialog : public QDialog
 {
@@ -18,6 +21,9 @@ public:
     virtual ~NotificationsDialog();
 
     void openPostFromNotificationId(decltype(NotificationItem::id) notificationId, bool openPost);
+#ifdef Q_OS_WIN
+    void setMainWindowHandle(QWindow *mainWindowHandle) { _mainWindowHandle = mainWindowHandle; }
+#endif
 
 private slots:
     void requestNotifications();
@@ -25,13 +31,17 @@ private slots:
 private:
     Ui::NotificationsDialog *ui;
     TextItemList _feed;
+    int _unreadCount = 0;
+#ifdef Q_OS_WIN
+    QWindow *_mainWindowHandle = nullptr;
+    QWinTaskbarButton *_taskbarButton = nullptr;
+#endif
 
     void openPostFromNotificationWithIndex(int row, bool openPost = true);
     void setReadStateForListItem(bool isRead, QListWidgetItem *item);
+    void updateAppIconWithUnreadCount(int value);
 
 #ifdef Q_OS_MACOS
-    void updateMacBadge(int value);
-
     void displaySystemNotification(const QString &text, const QString &dateTimeStr, decltype(NotificationItem::postId) postId, decltype(NotificationItem::id) notificationId);
     void removeSystemNotificationWithId(quint32 notificationId);
     void removeSystemNotifications();

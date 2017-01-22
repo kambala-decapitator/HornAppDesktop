@@ -100,25 +100,47 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
         ui->actionNotifications->setChecked(false);
         return true;
     }
-    else if (o == this && e->type() == QEvent::Close)
+    else if (o == this)
     {
-        // the guard fixes OS X double call issue from Qt 5.5+
-        static bool b;
-        if (!b)
+        switch (e->type())
         {
-            b = true;
-            CommentsDialog::instance().close();
-
-            QSettings settings;
-            settings.setValue(NotificationsDialogVisibleSettingsKey, _notificationsDlg->isVisible());
-            for (auto windowData : windowsToRestoreGeometry())
+        case QEvent::Close:
+        {
+            // the guard fixes OS X double call issue from Qt 5.5+
+            static bool b;
+            if (!b)
             {
-                settings.beginGroup(windowData.first);
-                settings.setValue(WindowPositionSettingsKey, windowData.second->pos());
-                settings.setValue(WindowSizeSettingsKey, windowData.second->size());
-                settings.endGroup();
+                b = true;
+                CommentsDialog::instance().close();
+
+                QSettings settings;
+                settings.setValue(NotificationsDialogVisibleSettingsKey, _notificationsDlg->isVisible());
+                for (auto windowData : windowsToRestoreGeometry())
+                {
+                    settings.beginGroup(windowData.first);
+                    settings.setValue(WindowPositionSettingsKey, windowData.second->pos());
+                    settings.setValue(WindowSizeSettingsKey, windowData.second->size());
+                    settings.endGroup();
+                }
+                return true;
             }
-            return true;
+        }
+            break;
+#ifdef Q_OS_WIN
+        case QEvent::Show:
+        {
+            static bool firstTime = true;
+            if (firstTime)
+            {
+                firstTime = false;
+                _notificationsDlg->setMainWindowHandle(windowHandle());
+                return true;
+            }
+        }
+            break;
+#endif
+        default:
+            break;
         }
     }
     return QMainWindow::eventFilter(o, e);
